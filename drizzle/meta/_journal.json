@@ -1,0 +1,62 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1766632134225,
+      "tag": "0000_concerned_mindworm",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1766632253646,
+      "tag": "0001_noisy_wolfpack",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1766633291870,
+      "tag": "0002_odd_psylocke",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1766633661212,
+      "tag": "0003_flawless_lifeguard",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1766635529636,
+      "tag": "0004_bent_zeigeist",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1768866006578,
+      "tag": "0005_amused_leper_queen",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1768867916760,
+      "tag": "0006_brief_wrecker",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1768868136925,
+      "tag": "0007_redundant_yellowjacket",
+      "breakpoints": true
+    }
+  ]
+}

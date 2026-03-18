@@ -1,0 +1,626 @@
+{
+  "query": "DESCRIBE employees;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3t75gMMEUmBepTg.90438506da3a --database 5eFUiWVBmxfrMFH9akrGkR --execute DESCRIBE employees;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "employeeId",
+      "Type": "varchar(32)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "legalFirstName",
+      "Type": "varchar(128)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "legalLastName",
+      "Type": "varchar(128)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "preferredName",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "dob",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "phone",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "email",
+      "Type": "varchar(320)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "addressLine1",
+      "Type": "varchar(256)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "city",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "state",
+      "Type": "varchar(64)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "zip",
+      "Type": "varchar(16)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "ssnLast4",
+      "Type": "varchar(4)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "roleAppliedFor",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "serviceLine",
+      "Type": "enum('OLTL','ODP','Skilled')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "hiringSource",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "submissionId",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "submissionTimestamp",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "currentPhase",
+      "Type": "enum('Intake','Screening','Documentation','Verification','Provisioning','Ready to Schedule','Active','Post-Onboarding')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "Intake",
+      "Extra": ""
+    },
+    {
+      "Field": "status",
+      "Type": "enum('Pending Review','In Progress','Action Required','On Hold','Complete','Withdrawn','Rejected')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "Pending Review",
+      "Extra": ""
+    },
+    {
+      "Field": "nextAction",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "owner",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "dueDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "priority",
+      "Type": "enum('High','Medium','Low')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "Medium",
+      "Extra": ""
+    },
+    {
+      "Field": "escalationFlag",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "completionPercent",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "dsPacket1EnvelopeId",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "dsPacket1Status",
+      "Type": "enum('Not Sent','Sent','Delivered','Completed','Declined','Voided')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "Not Sent",
+      "Extra": ""
+    },
+    {
+      "Field": "dsPacket1CompletedDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "dsPacket2EnvelopeId",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "dsPacket2Status",
+      "Type": "enum('Not Sent','Sent','Delivered','Completed','Declined','Voided')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "Not Sent",
+      "Extra": ""
+    },
+    {
+      "Field": "dsPacket2CompletedDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "i9Complete",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "i9VerifiedBy",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "i9VerifiedDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "patchReceived",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "patchDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "fbiReceived",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "fbiDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "childAbuseReceived",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "childAbuseDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "physicalTbComplete",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "physicalTbDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "cprComplete",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "cprExpDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "licenseVerified",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "licenseNumber",
+      "Type": "varchar(64)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "licenseExpDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "payrollAdded",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "payrollVerifiedBy",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "evvHhaProfileCreated",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "evvHhaProfileVerified",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "readyToSchedule",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "firstShiftDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "firstShiftConfirmed",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "activeDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "employeeFolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "offerFolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "applicationIntakeFolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "i9FolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "backgroundFolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "documentationFolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "medicalFolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "trainingFolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "payrollFolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "evvHhaFolderUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "hrNotes",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "complianceNotes",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "payRate",
+      "Type": "decimal(10,2)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "payType",
+      "Type": "enum('Hourly','Salary')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "proposedStartDate",
+      "Type": "date",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "createdBy",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastModifiedBy",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "googleSheetRowId",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastSyncedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nemployeeId\tvarchar(32)\tNO\tUNI\tNULL\t\nlegalFirstName\tvarchar(128)\tNO\t\tNULL\t\nlegalLastName\tvarchar(128)\tNO\t\tNULL\t\npreferredName\tvarchar(128)\tYES\t\tNULL\t\ndob\tdate\tYES\t\tNULL\t\nphone\tvarchar(20)\tYES\t\tNULL\t\nemail\tvarchar(320)\tYES\t\tNULL\t\naddressLine1\tvarchar(256)\tYES\t\tNULL\t\ncity\tvarchar(128)\tYES\t\tNULL\t\nstate\tvarchar(64)\tYES\t\tNULL\t\nzip\tvarchar(16)\tYES\t\tNULL\t\nssnLast4\tvarchar(4)\tYES\t\tNULL\t\nroleAppliedFor\tvarchar(128)\tYES\t\tNULL\t\nserviceLine\tenum('OLTL','ODP','Skilled')\tYES\t\tNULL\t\nhiringSource\tvarchar(128)\tYES\t\tNULL\t\nsubmissionId\tvarchar(128)\tYES\t\tNULL\t\nsubmissionTimestamp\ttimestamp\tYES\t\tNULL\t\ncurrentPhase\tenum('Intake','Screening','Documentation','Verification','Provisioning','Ready to Schedule','Active','Post-Onboarding')\tYES\t\tIntake\t\nstatus\tenum('Pending Review','In Progress','Action Required','On Hold','Complete','Withdrawn','Rejected')\tYES\t\tPending Review\t\nnextAction\ttext\tYES\t\tNULL\t\nowner\tvarchar(128)\tYES\t\tNULL\t\ndueDate\tdate\tYES\t\tNULL\t\npriority\tenum('High','Medium','Low')\tYES\t\tMedium\t\nescalationFlag\ttinyint(1)\tYES\t\t0\t\ncompletionPercent\tint(11)\tYES\t\t0\t\ndsPacket1EnvelopeId\tvarchar(128)\tYES\t\tNULL\t\ndsPacket1Status\tenum('Not Sent','Sent','Delivered','Completed','Declined','Voided')\tYES\t\tNot Sent\t\ndsPacket1CompletedDate\tdate\tYES\t\tNULL\t\ndsPacket2EnvelopeId\tvarchar(128)\tYES\t\tNULL\t\ndsPacket2Status\tenum('Not Sent','Sent','Delivered','Completed','Declined','Voided')\tYES\t\tNot Sent\t\ndsPacket2CompletedDate\tdate\tYES\t\tNULL\t\ni9Complete\ttinyint(1)\tYES\t\t0\t\ni9VerifiedBy\tvarchar(128)\tYES\t\tNULL\t\ni9VerifiedDate\tdate\tYES\t\tNULL\t\npatchReceived\ttinyint(1)\tYES\t\t0\t\npatchDate\tdate\tYES\t\tNULL\t\nfbiReceived\ttinyint(1)\tYES\t\t0\t\nfbiDate\tdate\tYES\t\tNULL\t\nchildAbuseReceived\ttinyint(1)\tYES\t\t0\t\nchildAbuseDate\tdate\tYES\t\tNULL\t\nphysicalTbComplete\ttinyint(1)\tYES\t\t0\t\nphysicalTbDate\tdate\tYES\t\tNULL\t\ncprComplete\ttinyint(1)\tYES\t\t0\t\ncprExpDate\tdate\tYES\t\tNULL\t\nlicenseVerified\ttinyint(1)\tYES\t\t0\t\nlicenseNumber\tvarchar(64)\tYES\t\tNULL\t\nlicenseExpDate\tdate\tYES\t\tNULL\t\npayrollAdded\ttinyint(1)\tYES\t\t0\t\npayrollVerifiedBy\tvarchar(128)\tYES\t\tNULL\t\nevvHhaProfileCreated\ttinyint(1)\tYES\t\t0\t\nevvHhaProfileVerified\ttinyint(1)\tYES\t\t0\t\nreadyToSchedule\ttinyint(1)\tYES\t\t0\t\nfirstShiftDate\tdate\tYES\t\tNULL\t\nfirstShiftConfirmed\ttinyint(1)\tYES\t\t0\t\nactiveDate\tdate\tYES\t\tNULL\t\nemployeeFolderUrl\ttext\tYES\t\tNULL\t\nofferFolderUrl\ttext\tYES\t\tNULL\t\napplicationIntakeFolderUrl\ttext\tYES\t\tNULL\t\ni9FolderUrl\ttext\tYES\t\tNULL\t\nbackgroundFolderUrl\ttext\tYES\t\tNULL\t\ndocumentationFolderUrl\ttext\tYES\t\tNULL\t\nmedicalFolderUrl\ttext\tYES\t\tNULL\t\ntrainingFolderUrl\ttext\tYES\t\tNULL\t\npayrollFolderUrl\ttext\tYES\t\tNULL\t\nevvHhaFolderUrl\ttext\tYES\t\tNULL\t\nhrNotes\ttext\tYES\t\tNULL\t\ncomplianceNotes\ttext\tYES\t\tNULL\t\npayRate\tdecimal(10,2)\tYES\t\tNULL\t\npayType\tenum('Hourly','Salary')\tYES\t\tNULL\t\nproposedStartDate\tdate\tYES\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\ncreatedBy\tint(11)\tYES\t\tNULL\t\nlastModifiedBy\tint(11)\tYES\t\tNULL\t\ngoogleSheetRowId\tint(11)\tYES\t\tNULL\t\nlastSyncedAt\ttimestamp\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}

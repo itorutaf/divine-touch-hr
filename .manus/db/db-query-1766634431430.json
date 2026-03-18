@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO employee_documents (\n  employeeId,\n  fileName,\n  originalFileName,\n  fileSize,\n  mimeType,\n  s3Key,\n  s3Url,\n  category,\n  status,\n  expirationDate,\n  createdAt,\n  updatedAt\n) VALUES (\n  1,\n  'patch_clearance.pdf',\n  'PATCH Clearance - Jane Doe.pdf',\n  204800,\n  'application/pdf',\n  'test/patch_clearance.pdf',\n  'https://example.com/test/patch_clearance.pdf',\n  'clearance_patch',\n  'approved',\n  DATE_ADD(CURDATE(), INTERVAL 5 DAY),\n  NOW(),\n  NOW()\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3t75gMMEUmBepTg.90438506da3a --database 5eFUiWVBmxfrMFH9akrGkR --execute INSERT INTO employee_documents (\n  employeeId,\n  fileName,\n  originalFileName,\n  fileSize,\n  mimeType,\n  s3Key,\n  s3Url,\n  category,\n  status,\n  expirationDate,\n  createdAt,\n  updatedAt\n) VALUES (\n  1,\n  'patch_clearance.pdf',\n  'PATCH Clearance - Jane Doe.pdf',\n  204800,\n  'application/pdf',\n  'test/patch_clearance.pdf',\n  'https://example.com/test/patch_clearance.pdf',\n  'clearance_patch',\n  'approved',\n  DATE_ADD(CURDATE(), INTERVAL 5 DAY),\n  NOW(),\n  NOW()\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 57
+}

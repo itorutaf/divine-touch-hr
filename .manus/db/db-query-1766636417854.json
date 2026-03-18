@@ -1,0 +1,19 @@
+{
+  "query": "SHOW TABLES LIKE '%timesheet%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3t75gMMEUmBepTg.90438506da3a --database 5eFUiWVBmxfrMFH9akrGkR --execute SHOW TABLES LIKE '%timesheet%';",
+  "rows": [
+    {
+      "Tables_in_5eFUiWVBmxfrMFH9akrGkR (%timesheet%)": "timesheet_reminders"
+    },
+    {
+      "Tables_in_5eFUiWVBmxfrMFH9akrGkR (%timesheet%)": "timesheet_templates"
+    },
+    {
+      "Tables_in_5eFUiWVBmxfrMFH9akrGkR (%timesheet%)": "timesheets"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_5eFUiWVBmxfrMFH9akrGkR (%timesheet%)\ntimesheet_reminders\ntimesheet_templates\ntimesheets\n",
+  "stderr": "",
+  "execution_time_ms": 81
+}

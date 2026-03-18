@@ -1,0 +1,80 @@
+CREATE TABLE `pay_periods` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`periodName` varchar(64) NOT NULL,
+	`startDate` date NOT NULL,
+	`endDate` date NOT NULL,
+	`timesheetDueDate` date NOT NULL,
+	`payrollProcessDate` date,
+	`status` enum('upcoming','active','closed','processed') DEFAULT 'upcoming',
+	`reminderSent` boolean DEFAULT false,
+	`finalReminderSent` boolean DEFAULT false,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `pay_periods_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `timesheet_reminders` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`employeeId` int NOT NULL,
+	`payPeriodId` int NOT NULL,
+	`reminderType` enum('first_reminder','second_reminder','final_reminder','overdue_notice') NOT NULL,
+	`sentTo` varchar(320),
+	`sentAt` timestamp NOT NULL DEFAULT (now()),
+	`status` enum('sent','failed','pending') DEFAULT 'pending',
+	`errorMessage` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `timesheet_reminders_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `timesheet_templates` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`name` varchar(128) NOT NULL,
+	`description` text,
+	`serviceLine` enum('OLTL','ODP','Skilled','All') DEFAULT 'All',
+	`fileKey` varchar(512) NOT NULL,
+	`fileUrl` varchar(1024) NOT NULL,
+	`originalFileName` varchar(256),
+	`mimeType` varchar(128),
+	`isActive` boolean DEFAULT true,
+	`uploadedBy` int,
+	`uploadedByName` varchar(128),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `timesheet_templates_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `timesheets` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`employeeId` int NOT NULL,
+	`payPeriodId` int NOT NULL,
+	`fileKey` varchar(512),
+	`fileUrl` varchar(1024),
+	`originalFileName` varchar(256),
+	`mimeType` varchar(128),
+	`fileSize` int,
+	`totalHours` decimal(6,2),
+	`participantName` varchar(256),
+	`signatureType` enum('wet','digital','pending') DEFAULT 'pending',
+	`participantSigned` boolean DEFAULT false,
+	`participantSignedDate` date,
+	`employeeSigned` boolean DEFAULT false,
+	`employeeSignedDate` date,
+	`evvCompliant` boolean DEFAULT false,
+	`evvVerifiedBy` int,
+	`evvVerifiedByName` varchar(128),
+	`evvVerifiedDate` timestamp,
+	`evvNotes` text,
+	`status` enum('draft','submitted','pending_review','approved','rejected','needs_correction') DEFAULT 'draft',
+	`reviewedBy` int,
+	`reviewedByName` varchar(128),
+	`reviewedAt` timestamp,
+	`reviewNotes` text,
+	`payrollReady` boolean DEFAULT false,
+	`payrollProcessedDate` timestamp,
+	`submittedAt` timestamp,
+	`uploadedBy` int,
+	`uploadedByName` varchar(128),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `timesheets_id` PRIMARY KEY(`id`)
+);

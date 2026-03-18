@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO employees (\n  employeeId, \n  legalFirstName, \n  legalLastName, \n  preferredName,\n  email, \n  phone, \n  serviceLine, \n  currentPhase, \n  status,\n  dob,\n  streetAddress,\n  city,\n  state,\n  zipCode,\n  createdAt,\n  updatedAt\n) VALUES (\n  'TEST-001',\n  'Jane',\n  'Doe',\n  'Jane',\n  'jane.doe@test.com',\n  '555-123-4567',\n  'OLTL',\n  'Documentation',\n  'In Progress',\n  '1990-05-15',\n  '123 Test Street',\n  'Philadelphia',\n  'PA',\n  '19101',\n  NOW(),\n  NOW()\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3t75gMMEUmBepTg.90438506da3a --database 5eFUiWVBmxfrMFH9akrGkR --execute INSERT INTO employees (\n  employeeId, \n  legalFirstName, \n  legalLastName, \n  preferredName,\n  email, \n  phone, \n  serviceLine, \n  currentPhase, \n  status,\n  dob,\n  streetAddress,\n  city,\n  state,\n  zipCode,\n  createdAt,\n  updatedAt\n) VALUES (\n  'TEST-001',\n  'Jane',\n  'Doe',\n  'Jane',\n  'jane.doe@test.com',\n  '555-123-4567',\n  'OLTL',\n  'Documentation',\n  'In Progress',\n  '1990-05-15',\n  '123 Test Street',\n  'Philadelphia',\n  'PA',\n  '19101',\n  NOW(),\n  NOW()\n);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'streetAddress' in 'field list'"
+  ]
+}

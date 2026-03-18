@@ -1,0 +1,22 @@
+CREATE TABLE `employee_documents` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`employeeId` int NOT NULL,
+	`fileName` varchar(256) NOT NULL,
+	`originalFileName` varchar(256) NOT NULL,
+	`fileSize` int NOT NULL,
+	`mimeType` varchar(128) NOT NULL,
+	`s3Key` varchar(512) NOT NULL,
+	`s3Url` text NOT NULL,
+	`category` enum('clearance_patch','clearance_fbi','clearance_child_abuse','id_drivers_license','id_social_security','id_passport','id_work_authorization','medical_physical','medical_tb_test','certification_cpr','certification_license','certification_training','form_i9','form_w4','form_direct_deposit','application','resume','reference','other') NOT NULL,
+	`status` enum('pending_review','approved','rejected','expired') DEFAULT 'pending_review',
+	`reviewedBy` int,
+	`reviewedByName` varchar(128),
+	`reviewedAt` timestamp,
+	`reviewNotes` text,
+	`expirationDate` date,
+	`uploadedBy` int,
+	`uploadedByName` varchar(128),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `employee_documents_id` PRIMARY KEY(`id`)
+);

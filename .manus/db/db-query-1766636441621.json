@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO pay_periods (periodName, startDate, endDate, timesheetDueDate, status, createdAt, updatedAt) \nVALUES ('Dec 16-29, 2024', '2024-12-16', '2024-12-29', '2024-12-31', 'active', NOW(), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3t75gMMEUmBepTg.90438506da3a --database 5eFUiWVBmxfrMFH9akrGkR --execute INSERT INTO pay_periods (periodName, startDate, endDate, timesheetDueDate, status, createdAt, updatedAt) \nVALUES ('Dec 16-29, 2024', '2024-12-16', '2024-12-29', '2024-12-31', 'active', NOW(), NOW());",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 78
+}
