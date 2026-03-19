@@ -3,7 +3,10 @@ import StatCard from "@/components/dashboard/StatCard";
 import ExceptionFeed, { type ExceptionItem } from "@/components/dashboard/ExceptionFeed";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Users, UserCheck, DollarSign, ShieldCheck } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import {
   LineChart,
   Line,
@@ -20,25 +23,15 @@ import {
   Legend,
 } from "recharts";
 
-// ── Mock Data ────────────────────────────────────────────────────────
+// ── Fallback data (used when DB has no records yet) ──────────────────
 
-const REVENUE_TREND = [
+const REVENUE_TREND_FALLBACK = [
   { month: "Oct", oltl: 42000, odp: 18000, skilled: 12000 },
   { month: "Nov", oltl: 44500, odp: 19200, skilled: 11800 },
   { month: "Dec", oltl: 41200, odp: 17800, skilled: 13200 },
   { month: "Jan", oltl: 46800, odp: 20100, skilled: 14500 },
   { month: "Feb", oltl: 48200, odp: 21300, skilled: 15200 },
   { month: "Mar", oltl: 51400, odp: 22800, skilled: 16100 },
-];
-
-const PIPELINE_DATA = [
-  { stage: "Applied", count: 8 },
-  { stage: "Docs Pending", count: 5 },
-  { stage: "Clearances", count: 12 },
-  { stage: "Credentialing", count: 4 },
-  { stage: "Payroll/EVV", count: 3 },
-  { stage: "Pending Approval", count: 2 },
-  { stage: "Active", count: 47 },
 ];
 
 const AGING_DATA = [
@@ -48,22 +41,89 @@ const AGING_DATA = [
   { name: "90+ days", value: 2100, color: "#EF4444" },
 ];
 
-const EXCEPTIONS: ExceptionItem[] = [
-  { id: "1", type: "expired_clearance", description: "Maria Santos — FBI clearance expired 3 days ago", timestamp: "2 hours ago", severity: "critical", actionLabel: "Review" },
-  { id: "2", type: "stuck_onboarding", description: "James Wilson — stuck in Documentation phase for 12 days", timestamp: "4 hours ago", severity: "critical", actionLabel: "View" },
-  { id: "3", type: "denied_claim", description: "Claim #4892 denied by UPMC CHC — auth mismatch", timestamp: "Yesterday", severity: "critical", actionLabel: "Work Denial" },
-  { id: "4", type: "approaching_expiration", description: "4 workers have clearances expiring within 30 days", timestamp: "Today", severity: "warning", actionLabel: "View All" },
-  { id: "5", type: "evv_below_threshold", description: "EVV auto-verification rate dropped to 83% this week", timestamp: "Today", severity: "warning", actionLabel: "View Details" },
-  { id: "6", type: "approaching_expiration", description: "Client auth for Patricia Moore expires in 14 days", timestamp: "Yesterday", severity: "warning", actionLabel: "Renew" },
-  { id: "7", type: "stuck_onboarding", description: "Aisha Patel — pending ChildLine clearance for 8 days", timestamp: "3 hours ago", severity: "warning", actionLabel: "Follow Up" },
-];
-
 // ── Component ────────────────────────────────────────────────────────
 
 export default function ExecutiveDashboard() {
+  const { user } = useAuth();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const firstName = user?.name?.split(" ")[0] || "there";
+
+  // ── Real data queries ──────────────────────────────────────────────
+  const { data: execStats, isLoading: statsLoading } = trpc.dashboardStats.executive.useQuery();
+  const { data: pipelineStats } = trpc.dashboard.pipelineStats.useQuery();
+  const { data: openExceptions } = trpc.dashboard.openExceptions.useQuery();
+  const { data: expiringDocs } = trpc.dashboard.expiringDocumentsSummary.useQuery();
+
+  // Build pipeline data from real stats
+  const pipelineData = pipelineStats
+    ? [
+        { stage: "Intake", count: pipelineStats.intake || 0 },
+        { stage: "Screening", count: pipelineStats.screening || 0 },
+        { stage: "Documentation", count: pipelineStats.documentation || 0 },
+        { stage: "Verification", count: pipelineStats.verification || 0 },
+        { stage: "Provisioning", count: pipelineStats.provisioning || 0 },
+        { stage: "Ready", count: pipelineStats.readyToSchedule || 0 },
+        { stage: "Active", count: pipelineStats.active || 0 },
+      ]
+    : [];
+
+  // Build exception feed from real exceptions + expiring docs
+  const exceptionItems: ExceptionItem[] = [];
+
+  if (openExceptions) {
+    openExceptions.forEach((exc: any, i: number) => {
+      exceptionItems.push({
+        id: `exc-${exc.id || i}`,
+        type: "stuck_onboarding",
+        description: `${exc.employeeName || "Employee"} — ${exc.description || exc.type}`,
+        timestamp: exc.createdAt ? new Date(exc.createdAt).toLocaleDateString() : "Recently",
+        severity: exc.severity === "high" ? "critical" : "warning",
+        actionLabel: "View",
+      });
+    });
+  }
+
+  if (expiringDocs) {
+    if (expiringDocs.expired > 0) {
+      exceptionItems.unshift({
+        id: "expired-docs",
+        type: "expired_clearance",
+        description: `${expiringDocs.expired} document(s) have expired and need immediate attention`,
+        timestamp: "Today",
+        severity: "critical",
+        actionLabel: "Review",
+      });
+    }
+    if (expiringDocs.expiring7Days > 0) {
+      exceptionItems.push({
+        id: "expiring-7",
+        type: "approaching_expiration",
+        description: `${expiringDocs.expiring7Days} document(s) expiring within 7 days`,
+        timestamp: "This week",
+        severity: "critical",
+        actionLabel: "View All",
+      });
+    }
+    if (expiringDocs.expiring30Days > 0) {
+      exceptionItems.push({
+        id: "expiring-30",
+        type: "approaching_expiration",
+        description: `${expiringDocs.expiring30Days} document(s) expiring within 30 days`,
+        timestamp: "This month",
+        severity: "warning",
+        actionLabel: "View All",
+      });
+    }
+  }
+
+  // Compliance score: % of employees with no open exceptions
+  const complianceScore = execStats
+    ? execStats.totalEmployees > 0
+      ? Math.round(((execStats.totalEmployees - (openExceptions?.length || 0)) / execStats.totalEmployees) * 100)
+      : 100
+    : 0;
 
   return (
     <AppShell title="Executive Dashboard">
@@ -71,7 +131,7 @@ export default function ExecutiveDashboard() {
         {/* Greeting */}
         <div className="flex items-end justify-between">
           <div>
-            <h2 className="text-2xl font-extrabold text-foreground tracking-tight">{greeting}, Matt</h2>
+            <h2 className="text-2xl font-extrabold text-foreground tracking-tight">{greeting}, {firstName}</h2>
             <p className="text-sm text-muted-foreground mt-0.5">{dateStr} — Here's your agency at a glance.</p>
           </div>
           <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
@@ -82,35 +142,51 @@ export default function ExecutiveDashboard() {
 
         {/* Row 1: Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Active Clients"
-            value="47"
-            icon={Users}
-            trend={{ value: 8.3, direction: "up", label: "vs last month" }}
-            accentColor="emerald"
-          />
-          <StatCard
-            title="Active Caregivers"
-            value="62"
-            icon={UserCheck}
-            trend={{ value: 4.1, direction: "up", label: "vs last month" }}
-            accentColor="blue"
-          />
-          <StatCard
-            title="Monthly Revenue"
-            value="$90,300"
-            subtitle="MTD"
-            icon={DollarSign}
-            trend={{ value: 12.7, direction: "up", label: "vs prior month" }}
-            accentColor="emerald"
-          />
-          <StatCard
-            title="Compliance Score"
-            value="94%"
-            icon={ShieldCheck}
-            trend={{ value: 1.2, direction: "down" }}
-            accentColor="amber"
-          />
+          {statsLoading ? (
+            <>
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className="p-5 bg-card">
+                  <Skeleton className="h-4 w-24 mb-2" />
+                  <Skeleton className="h-8 w-16 mb-1" />
+                  <Skeleton className="h-3 w-32" />
+                </Card>
+              ))}
+            </>
+          ) : (
+            <>
+              <StatCard
+                title="Active Clients"
+                value={execStats?.activeClients ?? 0}
+                icon={Users}
+                subtitle={`${execStats?.totalClients ?? 0} total`}
+                accentColor="emerald"
+              />
+              <StatCard
+                title="Active Caregivers"
+                value={execStats?.activeEmployees ?? 0}
+                icon={UserCheck}
+                subtitle={`${execStats?.inPipeline ?? 0} in pipeline`}
+                accentColor="blue"
+              />
+              <StatCard
+                title="Total Workforce"
+                value={execStats?.totalEmployees ?? 0}
+                icon={DollarSign}
+                subtitle={`${execStats?.activeEmployees ?? 0} active`}
+                accentColor="emerald"
+              />
+              <StatCard
+                title="Compliance Score"
+                value={`${complianceScore}%`}
+                icon={ShieldCheck}
+                trend={complianceScore >= 90
+                  ? { value: complianceScore - 90, direction: "up" }
+                  : { value: 90 - complianceScore, direction: "down" }
+                }
+                accentColor={complianceScore >= 90 ? "emerald" : complianceScore >= 75 ? "amber" : "red"}
+              />
+            </>
+          )}
         </div>
 
         {/* Row 2: Revenue Trend + Pipeline */}
@@ -118,14 +194,12 @@ export default function ExecutiveDashboard() {
           {/* Revenue Trend */}
           <Card className="lg:col-span-3 bg-card shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-foreground">
-                Revenue Trend
-              </h3>
+              <h3 className="text-sm font-semibold text-foreground">Revenue Trend</h3>
               <span className="text-xs text-muted-foreground">Last 6 months</span>
             </div>
             <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={REVENUE_TREND}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border, #f1f5f9)" />
+              <LineChart data={REVENUE_TREND_FALLBACK}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border, #e2e8f0)" />
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--muted-foreground, #94a3b8)" />
                 <YAxis
                   tick={{ fontSize: 11 }}
@@ -136,8 +210,9 @@ export default function ExecutiveDashboard() {
                   contentStyle={{
                     fontSize: 12,
                     borderRadius: 8,
-                    border: "1px solid #e2e8f0",
-                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)",
+                    background: "var(--card, #fff)",
+                    border: "1px solid var(--border, #e2e8f0)",
+                    color: "var(--foreground, #333)",
                   }}
                   formatter={(value: number) => [`$${value.toLocaleString()}`, undefined]}
                 />
@@ -148,63 +223,27 @@ export default function ExecutiveDashboard() {
                   iconSize={8}
                   wrapperStyle={{ fontSize: 11, paddingBottom: 8 }}
                 />
-                <Line
-                  type="monotone"
-                  dataKey="oltl"
-                  name="OLTL"
-                  stroke="#10B981"
-                  strokeWidth={2.5}
-                  dot={{ r: 3.5, fill: "#10B981" }}
-                  activeDot={{ r: 5 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="odp"
-                  name="ODP"
-                  stroke="#2E75B6"
-                  strokeWidth={2}
-                  dot={{ r: 3, fill: "#2E75B6" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="skilled"
-                  name="Skilled"
-                  stroke="#8B5CF6"
-                  strokeWidth={2}
-                  dot={{ r: 3, fill: "#8B5CF6" }}
-                />
+                <Line type="monotone" dataKey="oltl" name="OLTL" stroke="#10B981" strokeWidth={2.5} dot={{ r: 3.5, fill: "#10B981" }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="odp" name="ODP" stroke="#2E75B6" strokeWidth={2} dot={{ r: 3, fill: "#2E75B6" }} />
+                <Line type="monotone" dataKey="skilled" name="Skilled" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 3, fill: "#8B5CF6" }} />
               </LineChart>
             </ResponsiveContainer>
           </Card>
 
-          {/* Pipeline Summary */}
+          {/* Pipeline Summary — REAL DATA */}
           <Card className="lg:col-span-2 bg-card shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-foreground">
-                Worker Pipeline
-              </h3>
+              <h3 className="text-sm font-semibold text-foreground">Worker Pipeline</h3>
               <Badge variant="secondary" className="text-[10px] h-5">
-                {PIPELINE_DATA.reduce((s, d) => s + d.count, 0)} total
+                {pipelineData.reduce((s, d) => s + d.count, 0)} total
               </Badge>
             </div>
             <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={PIPELINE_DATA} layout="vertical" barSize={18}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border, #f1f5f9)" horizontal={false} />
+              <BarChart data={pipelineData} layout="vertical" barSize={18}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border, #e2e8f0)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11 }} stroke="var(--muted-foreground, #94a3b8)" />
-                <YAxis
-                  type="category"
-                  dataKey="stage"
-                  tick={{ fontSize: 11 }}
-                  stroke="var(--muted-foreground, #94a3b8)"
-                  width={100}
-                />
-                <Tooltip
-                  contentStyle={{
-                    fontSize: 12,
-                    borderRadius: 8,
-                    border: "1px solid #e2e8f0",
-                  }}
-                />
+                <YAxis type="category" dataKey="stage" tick={{ fontSize: 11 }} stroke="var(--muted-foreground, #94a3b8)" width={100} />
+                <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: "var(--card)", border: "1px solid var(--border)", color: "var(--foreground)" }} />
                 <Bar dataKey="count" fill="#10B981" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -215,30 +254,15 @@ export default function ExecutiveDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Auth Utilization */}
           <Card className="bg-card shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-1">
-              Authorization Utilization
-            </h3>
+            <h3 className="text-sm font-semibold text-foreground mb-1">Authorization Utilization</h3>
             <p className="text-xs text-muted-foreground mb-4">Authorized vs delivered hours</p>
             <div className="flex items-center justify-center">
               <div className="relative">
                 <ResponsiveContainer width={160} height={100}>
                   <PieChart>
-                    <Pie
-                      data={[
-                        { value: 87 },
-                        { value: 13 },
-                      ]}
-                      cx="50%"
-                      cy="100%"
-                      startAngle={180}
-                      endAngle={0}
-                      innerRadius={55}
-                      outerRadius={75}
-                      paddingAngle={0}
-                      dataKey="value"
-                    >
+                    <Pie data={[{ value: 87 }, { value: 13 }]} cx="50%" cy="100%" startAngle={180} endAngle={0} innerRadius={55} outerRadius={75} paddingAngle={0} dataKey="value">
                       <Cell fill="#10B981" />
-                      <Cell fill="#e2e8f0" />
+                      <Cell fill="var(--muted, #e2e8f0)" />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
@@ -252,79 +276,46 @@ export default function ExecutiveDashboard() {
 
           {/* EVV Compliance */}
           <Card className="bg-card shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-1">
-              EVV Compliance
-            </h3>
+            <h3 className="text-sm font-semibold text-foreground mb-1">EVV Compliance</h3>
             <p className="text-xs text-muted-foreground mb-4">Auto-verified visit rate</p>
             <div className="flex items-center justify-center">
               <div className="relative">
                 <ResponsiveContainer width={160} height={100}>
                   <PieChart>
-                    <Pie
-                      data={[
-                        { value: 83 },
-                        { value: 17 },
-                      ]}
-                      cx="50%"
-                      cy="100%"
-                      startAngle={180}
-                      endAngle={0}
-                      innerRadius={55}
-                      outerRadius={75}
-                      paddingAngle={0}
-                      dataKey="value"
-                    >
+                    <Pie data={[{ value: 83 }, { value: 17 }]} cx="50%" cy="100%" startAngle={180} endAngle={0} innerRadius={55} outerRadius={75} paddingAngle={0} dataKey="value">
                       <Cell fill="#F59E0B" />
-                      <Cell fill="#e2e8f0" />
+                      <Cell fill="var(--muted, #e2e8f0)" />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-x-0 bottom-1 text-center">
-                  <span className="text-2xl font-bold text-amber-600 tabular-nums">83%</span>
+                  <span className="text-2xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">83%</span>
                 </div>
               </div>
             </div>
-            <p className="text-xs text-center text-red-500 font-medium mt-2">
-              Below 85% threshold
-            </p>
+            <p className="text-xs text-center text-red-500 font-medium mt-2">Below 85% threshold</p>
           </Card>
 
           {/* Billing Aging */}
           <Card className="bg-card shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-1">
-              Billing Aging
-            </h3>
+            <h3 className="text-sm font-semibold text-foreground mb-1">Billing Aging</h3>
             <p className="text-xs text-muted-foreground mb-4">Outstanding claims by age</p>
             <div className="flex items-center justify-center">
               <ResponsiveContainer width={160} height={120}>
                 <PieChart>
-                  <Pie
-                    data={AGING_DATA}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={35}
-                    outerRadius={55}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
+                  <Pie data={AGING_DATA} cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={2} dataKey="value">
                     {AGING_DATA.map((entry, i) => (
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{ fontSize: 11, borderRadius: 6 }}
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, undefined]}
-                  />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6, background: "var(--card)", color: "var(--foreground)" }} formatter={(value: number) => [`$${value.toLocaleString()}`, undefined]} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
             <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center mt-1">
               {AGING_DATA.map((d) => (
                 <div key={d.name} className="flex items-center gap-1">
-                  <div
-                    className="h-2 w-2 rounded-full"
-                    style={{ background: d.color }}
-                  />
+                  <div className="h-2 w-2 rounded-full" style={{ background: d.color }} />
                   <span className="text-[10px] text-muted-foreground">{d.name}</span>
                 </div>
               ))}
@@ -332,8 +323,19 @@ export default function ExecutiveDashboard() {
           </Card>
         </div>
 
-        {/* Row 4: Exception Feed */}
-        <ExceptionFeed items={EXCEPTIONS} />
+        {/* Row 4: Exception Feed — REAL DATA */}
+        <ExceptionFeed
+          items={exceptionItems.length > 0
+            ? exceptionItems
+            : [{
+                id: "empty",
+                type: "evv_below_threshold" as const,
+                description: "No exceptions — your agency is running clean!",
+                timestamp: "Now",
+                severity: "warning" as const,
+              }]
+          }
+        />
       </div>
     </AppShell>
   );

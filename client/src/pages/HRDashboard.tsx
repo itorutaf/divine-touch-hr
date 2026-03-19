@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   User,
 } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 // ── Mock Data ────────────────────────────────────────────────────────
 
@@ -91,35 +93,51 @@ const ACTION_BUTTONS: Record<string, { label: string; variant: "default" | "outl
 // ── Component ────────────────────────────────────────────────────────
 
 export default function HRDashboard() {
+  const { user } = useAuth();
+  const { data: hrStats } = trpc.dashboardStats.hr.useQuery();
+  const { data: expiringDocs } = trpc.dashboard.expiringDocumentsSummary.useQuery();
+
+  const pipelineCount = hrStats?.pipelineCount ?? 0;
+  const stuckCount = hrStats?.stuckCount ?? 0;
+  const expiringCount = expiringDocs ? expiringDocs.expired + expiringDocs.expiring7Days + expiringDocs.expiring14Days + expiringDocs.expiring30Days : 0;
+  const firstName = user?.name?.split(" ")[0] || "there";
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
   return (
     <AppShell title="HR Dashboard">
       <div className="space-y-6 max-w-[1440px]">
-        {/* Row 1: Stat Cards */}
+        {/* Greeting */}
+        <div>
+          <h2 className="text-2xl font-extrabold text-foreground tracking-tight">{greeting}, {firstName}</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">Here's your onboarding pipeline at a glance.</p>
+        </div>
+
+        {/* Row 1: Stat Cards — REAL DATA */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title="Workers in Pipeline"
-            value="15"
-            subtitle="across 5 phases"
+            value={pipelineCount}
+            subtitle={`${Object.keys(hrStats?.byPhase || {}).filter(k => (hrStats?.byPhase as any)?.[k]?.length > 0).length} active phases`}
             icon={Users}
             accentColor="blue"
           />
           <StatCard
             title="Stuck > 7 Days"
-            value="3"
+            value={stuckCount}
             icon={AlertCircle}
-            accentColor="red"
-            trend={{ value: 50, direction: "up", label: "vs last week" }}
+            accentColor={stuckCount > 0 ? "red" : "emerald"}
           />
           <StatCard
             title="Expiring Documents"
-            value="6"
+            value={expiringCount}
             subtitle="within 30 days"
             icon={FileWarning}
-            accentColor="amber"
+            accentColor={expiringCount > 3 ? "red" : expiringCount > 0 ? "amber" : "emerald"}
           />
           <StatCard
             title="Pending DocuSign"
-            value="4"
+            value="—"
             subtitle="awaiting signatures"
             icon={FileSignature}
             accentColor="slate"
