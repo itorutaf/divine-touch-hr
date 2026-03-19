@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -93,9 +93,8 @@ export default function Exceptions() {
   };
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title="Exceptions"
-      navItems={navItems}
     >
       <div className="space-y-6">
         {/* Search */}
@@ -254,6 +253,6 @@ export default function Exceptions() {
           </DialogContent>
         </Dialog>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

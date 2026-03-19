@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -88,9 +88,8 @@ export default function NewEmployee() {
   };
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title="New Employee"
-      navItems={navItems}
       actions={
         <Button variant="outline" onClick={() => setLocation("/employees")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -303,6 +302,6 @@ export default function NewEmployee() {
           </div>
         </div>
       </form>
-    </DashboardLayout>
+    </AppShell>
   );
 }

@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -172,18 +172,18 @@ export default function EmployeeTimesheets() {
 
   if (!employee) {
     return (
-      <DashboardLayout title="Employee Timesheets" navItems={navItems}>
+      <AppShell title="Employee Timesheets">
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
-      </DashboardLayout>
+      </AppShell>
     );
   }
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title={`Timesheets - ${employee.legalFirstName} ${employee.legalLastName}`}
-      navItems={navItems}
+     
       actions={
         <Button onClick={() => setShowUploadDialog(true)} className="bg-emerald-600 hover:bg-emerald-700">
           <Upload className="h-4 w-4 mr-2" />
@@ -454,6 +454,6 @@ export default function EmployeeTimesheets() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </AppShell>
   );
 }

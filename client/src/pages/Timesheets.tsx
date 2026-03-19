@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -148,9 +148,8 @@ export default function Timesheets() {
   };
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title="Timesheets" 
-      navItems={navItems}
       actions={
         isHROrAdmin && (
           <Button onClick={() => setShowNewPeriodDialog(true)} className="bg-emerald-600 hover:bg-emerald-700">
@@ -592,6 +591,6 @@ export default function Timesheets() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </AppShell>
   );
 }

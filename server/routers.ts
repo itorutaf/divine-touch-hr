@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import { generateUKGExport, generateADPExport, generateHHAExchangeExport, generateGenericExport } from "./payrollExportService";
 import { storagePut } from "./storage";
+import { calculateProfitability, getServiceTypes, getDefaultServiceType, getRate, getDefaultPayRate, WAIVER_DURATION, DEFAULT_COSTS, OLTL_HOURLY_RATES, ODP_RATES, SKILLED_RATES, REGION_NAMES, SERVICE_TYPE_LABELS } from "./modules/profitability";
 
 // Role-based procedure helpers
 const hrProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -146,7 +147,7 @@ export const appRouter = router({
       return db.getAllUsers();
     }),
     updateRole: adminProcedure
-      .input(z.object({ userId: z.number(), role: z.enum(["user", "admin", "hr", "supervisor", "compliance"]) }))
+      .input(z.object({ userId: z.number(), role: z.enum(["user", "admin", "hr", "supervisor", "compliance", "billing", "coordinator"]) }))
       .mutation(async ({ input }) => {
         await db.updateUserRole(input.userId, input.role);
         return { success: true };
@@ -1280,6 +1281,195 @@ export const appRouter = router({
         });
         return { success: true };
       }),
+  }),
+
+  // ── Profitability Calculator ───────────────────────────────────────
+  profitability: router({
+    calculate: protectedProcedure
+      .input(z.object({
+        clientName: z.string(),
+        waiverType: z.enum(["OLTL", "ODP", "Skilled"]),
+        region: z.number().min(1).max(4),
+        serviceType: z.string().optional(),
+        hoursPerWeek: z.number().min(0),
+        scheduleType: z.enum(["fixed", "mostly_fixed", "variable"]),
+        caregiverType: z.enum(["family", "non_family"]),
+        caregiverSource: z.enum(["referral", "indeed", "job_board", "word_of_mouth", "other"]),
+        payRateOverride: z.number().optional(),
+        fitAssessment: z.object({
+          hasCaregiversAvailable: z.boolean(),
+          inServiceArea: z.boolean(),
+          scheduleCompatible: z.boolean(),
+          withinCapabilities: z.boolean(),
+          familyDynamicsGood: z.boolean(),
+        }),
+        useMultiWorker: z.boolean().optional(),
+        staffingModel: z.any().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(({ input }) => {
+        return calculateProfitability(input as any);
+      }),
+
+    getRateTables: protectedProcedure.query(() => {
+      return {
+        OLTL: OLTL_HOURLY_RATES,
+        ODP: ODP_RATES,
+        Skilled: SKILLED_RATES,
+        regions: REGION_NAMES,
+        serviceTypeLabels: SERVICE_TYPE_LABELS,
+        defaultCosts: DEFAULT_COSTS,
+        waiverDuration: WAIVER_DURATION,
+      };
+    }),
+
+    getServiceTypes: protectedProcedure
+      .input(z.object({ waiverType: z.enum(["OLTL", "ODP", "Skilled"]) }))
+      .query(({ input }) => {
+        return {
+          types: getServiceTypes(input.waiverType),
+          defaultType: getDefaultServiceType(input.waiverType),
+        };
+      }),
+
+    getRate: protectedProcedure
+      .input(z.object({
+        waiverType: z.enum(["OLTL", "ODP", "Skilled"]),
+        serviceType: z.string(),
+        region: z.number().min(1).max(4),
+      }))
+      .query(({ input }) => {
+        return {
+          rate: getRate(input.waiverType, input.serviceType, input.region as any),
+          defaultPayRate: getDefaultPayRate(input.waiverType, input.serviceType),
+        };
+      }),
+  }),
+
+  // ── Client Management ─────────────────────────────────────────────
+  clients: router({
+    list: protectedProcedure.query(async () => {
+      return db.getAllClients();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return db.getClientById(input.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        firstName: z.string().min(1),
+        lastName: z.string().min(1),
+        serviceLine: z.enum(["OLTL", "ODP", "Skilled"]).optional(),
+        region: z.number().min(1).max(4).optional(),
+        phone: z.string().optional(),
+        email: z.string().email().optional(),
+        county: z.string().optional(),
+        mcoId: z.string().optional(),
+        referralSource: z.string().optional(),
+        serviceType: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return db.createClient({
+          ...input,
+          createdBy: ctx.user.id,
+          lastModifiedBy: ctx.user.id,
+        });
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        serviceLine: z.enum(["OLTL", "ODP", "Skilled"]).optional(),
+        region: z.number().optional(),
+        status: z.enum(["referral", "assessment", "active", "on_hold", "discharged"]).optional(),
+        phone: z.string().optional(),
+        email: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { id, ...data } = input;
+        return db.updateClient(id, { ...data, lastModifiedBy: ctx.user.id });
+      }),
+  }),
+
+  // ── Authorizations ────────────────────────────────────────────────
+  authorizations: router({
+    list: protectedProcedure.query(async () => {
+      return db.getAllAuthorizations();
+    }),
+
+    getByClientId: protectedProcedure
+      .input(z.object({ clientId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getAuthorizationsByClientId(input.clientId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        clientId: z.number(),
+        mco: z.string().optional(),
+        serviceType: z.string().optional(),
+        authorizedHoursPerWeek: z.string().optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        authorizationNumber: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return db.createAuthorization({
+          ...input,
+          startDate: input.startDate ? new Date(input.startDate) : undefined,
+          endDate: input.endDate ? new Date(input.endDate) : undefined,
+        } as any);
+      }),
+  }),
+
+  // ── Executive Dashboard Stats ─────────────────────────────────────
+  dashboardStats: router({
+    executive: protectedProcedure.query(async () => {
+      const employees = await db.getAllEmployees();
+      const clients = await db.getAllClients();
+
+      const activeEmployees = employees.filter(e => e.currentPhase === "Active").length;
+      const activeClients = clients.filter(c => (c as any).status === "active").length;
+      const inPipeline = employees.filter(e => e.currentPhase !== "Active" && e.currentPhase !== "Post-Onboarding").length;
+
+      return {
+        activeClients,
+        activeEmployees,
+        inPipeline,
+        totalEmployees: employees.length,
+        totalClients: clients.length,
+      };
+    }),
+
+    hr: protectedProcedure.query(async () => {
+      const employees = await db.getAllEmployees();
+
+      const pipelinePhases = ["Intake", "Screening", "Documentation", "Verification", "Provisioning", "Ready to Schedule"];
+      const inPipeline = employees.filter(e => pipelinePhases.includes(e.currentPhase ?? ""));
+      const stuckCount = inPipeline.filter(e => {
+        if (!e.updatedAt) return false;
+        const daysSinceUpdate = (Date.now() - new Date(e.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
+        return daysSinceUpdate > 7;
+      }).length;
+
+      // Group by phase for mini-kanban
+      const byPhase: Record<string, typeof employees> = {};
+      for (const phase of pipelinePhases) {
+        byPhase[phase] = employees.filter(e => e.currentPhase === phase);
+      }
+
+      return {
+        pipelineCount: inPipeline.length,
+        stuckCount,
+        byPhase,
+      };
+    }),
   }),
 });
 

@@ -2,15 +2,16 @@ import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, date, de
 
 /**
  * Core user table backing auth flow with role-based access control.
- * Roles: admin (full access), hr (employee management), supervisor (shift approval), compliance (clearances)
+ * Roles: admin, hr, supervisor, compliance, billing, coordinator
  */
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  password: varchar("password", { length: 256 }), // scrypt hash (nullable for legacy/SSO users)
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin", "hr", "supervisor", "compliance"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin", "hr", "supervisor", "compliance", "billing", "coordinator"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -795,3 +796,217 @@ export const hhaEmployeeMapping = mysqlTable("hha_employee_mapping", {
 
 export type HhaEmployeeMapping = typeof hhaEmployeeMapping.$inferSelect;
 export type InsertHhaEmployeeMapping = typeof hhaEmployeeMapping.$inferInsert;
+
+
+// ============ CAREBASE PHASE 1: CLIENT & COMPLIANCE TABLES ============
+
+/**
+ * Client records — referral through discharge lifecycle
+ */
+export const clients = mysqlTable("clients", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: varchar("tenantId", { length: 36 }),
+
+  // Identity
+  firstName: varchar("firstName", { length: 100 }).notNull(),
+  lastName: varchar("lastName", { length: 100 }).notNull(),
+  dob: date("dob"),
+  phone: varchar("phone", { length: 20 }),
+  email: varchar("email", { length: 320 }),
+  addressLine1: varchar("addressLine1", { length: 256 }),
+  city: varchar("city", { length: 128 }),
+  state: varchar("state", { length: 64 }),
+  zip: varchar("zip", { length: 16 }),
+  county: varchar("county", { length: 128 }),
+
+  // Service configuration
+  serviceLine: mysqlEnum("serviceLine", ["OLTL", "ODP", "Skilled"]),
+  region: int("region"), // 1-4 PA regions
+  serviceType: varchar("serviceType", { length: 128 }),
+  mcoId: varchar("mcoId", { length: 50 }),
+  referralSource: varchar("referralSource", { length: 200 }),
+
+  // Lifecycle
+  status: mysqlEnum("clientStatus", ["referral", "assessment", "active", "on_hold", "discharged"]).default("referral"),
+  assignedCoordinatorId: int("assignedCoordinatorId"),
+  startDate: date("startDate"),
+  dischargeDate: date("dischargeDate"),
+  dischargeReason: text("dischargeReason"),
+
+  // Emergency contact
+  emergencyContactName: varchar("emergencyContactName", { length: 200 }),
+  emergencyContactPhone: varchar("emergencyContactPhone", { length: 20 }),
+  emergencyContactRelation: varchar("emergencyContactRelation", { length: 100 }),
+
+  // Service coordinator (MCO side)
+  serviceCoordinatorName: varchar("serviceCoordinatorName", { length: 200 }),
+  serviceCoordinatorPhone: varchar("serviceCoordinatorPhone", { length: 20 }),
+  serviceCoordinatorEmail: varchar("serviceCoordinatorEmail", { length: 320 }),
+
+  // Onboarding
+  onboardingChecklist: text("onboardingChecklist"), // JSON
+  notes: text("notes"),
+
+  // Audit
+  createdBy: int("createdBy"),
+  lastModifiedBy: int("lastModifiedBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Client = typeof clients.$inferSelect;
+export type InsertClient = typeof clients.$inferInsert;
+
+/**
+ * Authorization tracking — authorized vs delivered hours per client
+ */
+export const authorizations = mysqlTable("authorizations", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  mco: varchar("mco", { length: 100 }),
+  serviceType: varchar("serviceType", { length: 100 }),
+  authorizedHoursPerWeek: decimal("authorizedHoursPerWeek", { precision: 6, scale: 2 }),
+  startDate: date("startDate"),
+  endDate: date("endDate"),
+  authorizationNumber: varchar("authorizationNumber", { length: 100 }),
+  status: mysqlEnum("authStatus", ["active", "expiring", "expired", "pending_renewal"]).default("active"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Authorization = typeof authorizations.$inferSelect;
+export type InsertAuthorization = typeof authorizations.$inferInsert;
+
+/**
+ * Profitability snapshots — stored calculation results per client
+ */
+export const profitabilitySnapshots = mysqlTable("profitability_snapshots", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  weekOf: date("weekOf"),
+
+  // Financials
+  revenue: decimal("revenue", { precision: 10, scale: 2 }),
+  laborCost: decimal("laborCost", { precision: 10, scale: 2 }),
+  overtimeCost: decimal("overtimeCost", { precision: 10, scale: 2 }),
+  overheadAllocation: decimal("overheadAllocation", { precision: 10, scale: 2 }),
+  grossProfit: decimal("grossProfit", { precision: 10, scale: 2 }),
+  grossMargin: decimal("grossMargin", { precision: 5, scale: 2 }),
+
+  // Full calculation I/O stored as JSON
+  inputJson: text("inputJson"),
+  resultsJson: text("resultsJson"),
+
+  // Summary fields for quick querying
+  profitabilityScore: int("profitabilityScore"),
+  recommendation: varchar("recommendation", { length: 32 }),
+
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ProfitabilitySnapshot = typeof profitabilitySnapshots.$inferSelect;
+export type InsertProfitabilitySnapshot = typeof profitabilitySnapshots.$inferInsert;
+
+/**
+ * Background clearances — PA Act 153 compliance (60-month validity)
+ */
+export const clearances = mysqlTable("clearances", {
+  id: int("id").autoincrement().primaryKey(),
+  employeeId: int("employeeId").notNull(),
+  type: mysqlEnum("clearanceType", ["PA_PATCH", "FBI", "CHILDLINE"]).notNull(),
+  status: mysqlEnum("clearanceStatus", ["not_started", "initiated", "pending", "clear", "flagged", "expired"]).default("not_started"),
+  submissionDate: date("submissionDate"),
+  resultDate: date("resultDate"),
+  expirationDate: date("expirationDate"), // submissionDate + 60 months
+  certificateS3Key: varchar("certificateS3Key", { length: 500 }),
+  checkrCandidateId: varchar("checkrCandidateId", { length: 100 }),
+  checkrReportId: varchar("checkrReportId", { length: 100 }),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Clearance = typeof clearances.$inferSelect;
+export type InsertClearance = typeof clearances.$inferInsert;
+
+/**
+ * Training records — PA track-specific requirements (OLTL/ODP/Skilled)
+ */
+export const trainingRecords = mysqlTable("training_records", {
+  id: int("id").autoincrement().primaryKey(),
+  employeeId: int("employeeId").notNull(),
+  courseName: varchar("courseName", { length: 200 }),
+  courseSource: mysqlEnum("courseSource", ["NEVVON", "MYODP", "CUSTOM", "EXTERNAL"]),
+  trackRequirement: mysqlEnum("trackRequirement", ["OLTL", "ODP", "Skilled", "ALL"]),
+  isInitial: boolean("isInitial"), // true = pre-service, false = annual
+  status: mysqlEnum("trainingStatus", ["assigned", "in_progress", "completed", "expired"]).default("assigned"),
+  assignedDate: date("assignedDate"),
+  completedDate: date("completedDate"),
+  score: int("score"),
+  hoursCredit: decimal("hoursCredit", { precision: 4, scale: 1 }),
+  certificateS3Key: varchar("certificateS3Key", { length: 500 }),
+  expirationDate: date("expirationDate"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TrainingRecord = typeof trainingRecords.$inferSelect;
+export type InsertTrainingRecord = typeof trainingRecords.$inferInsert;
+
+/**
+ * Incident reports — PA-mandated timeline tracking
+ */
+export const incidents = mysqlTable("incidents", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: varchar("tenantId", { length: 36 }),
+  clientId: int("clientId"),
+  reportedBy: int("reportedBy"),
+
+  category: mysqlEnum("incidentCategory", [
+    "abuse_physical", "abuse_psychological", "abuse_sexual", "abuse_verbal",
+    "neglect", "exploitation", "abandonment", "death", "serious_injury",
+    "medication_error", "service_interruption", "rights_violation", "elopement", "other"
+  ]).notNull(),
+  severity: mysqlEnum("incidentSeverity", ["critical", "major", "minor"]).notNull(),
+
+  incidentDate: timestamp("incidentDate"),
+  description: text("description"),
+  immediateActions: text("immediateActions"),
+
+  // PA-mandated deadlines
+  scNotifiedAt: timestamp("scNotifiedAt"),              // 24hr deadline
+  eimEnteredAt: timestamp("eimEnteredAt"),              // 48hr deadline
+  investigationStartedAt: timestamp("investigationStartedAt"), // 24hr deadline
+  investigationCompletedAt: timestamp("investigationCompletedAt"), // 30 day deadline
+  participantNotifiedAt: timestamp("participantNotifiedAt"),   // 24hr deadline
+
+  resolution: text("resolution"),
+  correctiveActions: text("correctiveActions"),
+  status: mysqlEnum("incidentStatus", ["open", "investigating", "resolved", "closed"]).default("open"),
+
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Incident = typeof incidents.$inferSelect;
+export type InsertIncident = typeof incidents.$inferInsert;
+
+/**
+ * LEIE/SAM exclusion screenings — monthly OIG compliance
+ */
+export const exclusionScreenings = mysqlTable("exclusion_screenings", {
+  id: int("id").autoincrement().primaryKey(),
+  employeeId: int("employeeId").notNull(),
+  screeningDate: date("screeningDate"),
+  leieResult: mysqlEnum("leieResult", ["clear", "match", "error"]),
+  samResult: mysqlEnum("samResult", ["clear", "match", "error"]),
+  matchDetails: text("matchDetails"), // JSON
+  resolvedAt: timestamp("resolvedAt"),
+  resolvedBy: int("resolvedBy"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ExclusionScreening = typeof exclusionScreenings.$inferSelect;
+export type InsertExclusionScreening = typeof exclusionScreenings.$inferInsert;

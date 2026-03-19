@@ -19,7 +19,6 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { LogOut, PanelLeft } from "lucide-react";
 import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
@@ -76,15 +75,15 @@ export default function DashboardLayout({
           </div>
           <div className="flex flex-col items-center gap-4">
             <h1 className="text-2xl font-semibold tracking-tight text-center">
-              Divine Touch Home Care
+              CareBase
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Sign in to access the HR Onboarding System
+              Sign in to access your agency dashboard
             </p>
           </div>
           <Button
             onClick={() => {
-              window.location.href = getLoginUrl();
+              window.location.href = "/login";
             }}
             size="lg"
             className="w-full bg-emerald-600 hover:bg-emerald-700"
@@ -182,6 +181,8 @@ function DashboardLayoutContent({
       case "hr": return "bg-blue-100 text-blue-700";
       case "supervisor": return "bg-purple-100 text-purple-700";
       case "compliance": return "bg-amber-100 text-amber-700";
+      case "billing": return "bg-emerald-100 text-emerald-700";
+      case "coordinator": return "bg-cyan-100 text-cyan-700";
       default: return "bg-slate-100 text-slate-700";
     }
   };
@@ -206,10 +207,10 @@ function DashboardLayoutContent({
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold text-sm">DT</span>
+                    <span className="text-white font-bold text-sm">CB</span>
                   </div>
                   <span className="font-semibold tracking-tight truncate text-sm">
-                    Divine Touch HR
+                    CareBase
                   </span>
                 </div>
               ) : null}

@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,9 +57,8 @@ export default function Dashboard() {
   }
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title="Dashboard" 
-      navItems={navItems}
       actions={
         <Button onClick={() => setLocation("/employees/new")} className="bg-emerald-600 hover:bg-emerald-700">
           <UserPlus className="h-4 w-4 mr-2" />
@@ -356,6 +355,6 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -117,9 +117,8 @@ export default function Approvals() {
   };
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title="Pending Approvals"
-      navItems={navItems}
     >
       <div className="space-y-6">
         {/* Filter */}
@@ -270,6 +269,6 @@ export default function Approvals() {
           </DialogContent>
         </Dialog>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

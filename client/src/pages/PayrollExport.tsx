@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -242,7 +242,7 @@ export default function PayrollExport() {
     : previewData;
   
   return (
-    <DashboardLayout title="Payroll Export" navItems={navItems}>
+    <AppShell title="Payroll Export">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -737,6 +737,6 @@ export default function PayrollExport() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

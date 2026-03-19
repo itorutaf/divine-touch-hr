@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -84,9 +84,8 @@ export default function PayrollReports() {
   const selectedPayPeriod = payPeriods?.find(p => p.id === selectedPayPeriodId);
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title="Divine Touch HR" 
-      navItems={navItems}
     >
       <div className="space-y-6">
         {/* Header */}
@@ -314,6 +313,6 @@ export default function PayrollReports() {
           </Card>
         )}
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

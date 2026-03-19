@@ -1,7 +1,7 @@
 import { eq, desc, asc, and, or, like, isNull, sql, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { 
-  InsertUser, users, 
+import {
+  InsertUser, users,
   employees, InsertEmployee, Employee,
   gateApprovals, InsertGateApproval, GateApproval,
   auditLog, InsertAuditLog,
@@ -13,9 +13,11 @@ import {
   employeeBenefits, InsertEmployeeBenefits, EmployeeBenefits,
   employeeCompensation, InsertEmployeeCompensation, EmployeeCompensation,
   payrollExports, InsertPayrollExport, PayrollExport,
-  hhaEmployeeMapping, InsertHhaEmployeeMapping, HhaEmployeeMapping
+  hhaEmployeeMapping, InsertHhaEmployeeMapping, HhaEmployeeMapping,
+  clients, InsertClient, Client,
+  authorizations, InsertAuthorization, Authorization,
+  profitabilitySnapshots, InsertProfitabilitySnapshot,
 } from "../drizzle/schema";
-import { ENV } from './_core/env';
 import { nanoid } from 'nanoid';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -69,9 +71,6 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
     }
 
     if (!values.lastSignedIn) {
@@ -102,10 +101,48 @@ export async function getAllUsers() {
   return db.select().from(users).orderBy(desc(users.createdAt));
 }
 
-export async function updateUserRole(userId: number, role: "user" | "admin" | "hr" | "supervisor" | "compliance") {
+export async function updateUserRole(userId: number, role: "user" | "admin" | "hr" | "supervisor" | "compliance" | "billing" | "coordinator") {
   const db = await getDb();
   if (!db) return;
   await db.update(users).set({ role }).where(eq(users.id, userId));
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createUserWithPassword(data: {
+  openId: string;
+  email: string;
+  name: string;
+  password: string;
+  loginMethod?: string;
+  lastSignedIn?: Date;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(users).values({
+    openId: data.openId,
+    email: data.email,
+    name: data.name,
+    password: data.password,
+    loginMethod: data.loginMethod ?? "email",
+    role: "user",
+    lastSignedIn: data.lastSignedIn ?? new Date(),
+  });
+
+  return getUserByEmail(data.email);
 }
 
 // ============ EMPLOYEE QUERIES ============
@@ -1087,6 +1124,74 @@ export async function getAllEmployeesForExport(filters?: {
       results.push(fullData);
     }
   }
-  
+
   return results;
+}
+
+
+// ============ CLIENT QUERIES ============
+
+export async function getAllClients() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(clients).orderBy(desc(clients.createdAt));
+}
+
+export async function getClientById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(clients).where(eq(clients.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createClient(data: Partial<InsertClient> & { firstName: string; lastName: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(clients).values(data as InsertClient);
+  return getClientById(Number(result[0].insertId));
+}
+
+export async function updateClient(id: number, data: Partial<InsertClient>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(clients).set(data).where(eq(clients.id, id));
+  return getClientById(id);
+}
+
+
+// ============ AUTHORIZATION QUERIES ============
+
+export async function getAllAuthorizations() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(authorizations).orderBy(desc(authorizations.createdAt));
+}
+
+export async function getAuthorizationsByClientId(clientId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(authorizations).where(eq(authorizations.clientId, clientId));
+}
+
+export async function createAuthorization(data: Partial<InsertAuthorization> & { clientId: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(authorizations).values(data as InsertAuthorization);
+  return { id: Number(result[0].insertId) };
+}
+
+
+// ============ PROFITABILITY SNAPSHOT QUERIES ============
+
+export async function createProfitabilitySnapshot(data: Partial<InsertProfitabilitySnapshot>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(profitabilitySnapshots).values(data as InsertProfitabilitySnapshot);
+  return { id: Number(result[0].insertId) };
+}
+
+export async function getSnapshotsByClientId(clientId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(profitabilitySnapshots).where(eq(profitabilitySnapshots.clientId, clientId)).orderBy(desc(profitabilitySnapshots.createdAt));
 }

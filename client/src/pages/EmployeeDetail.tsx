@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -149,17 +149,17 @@ export default function EmployeeDetail() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title="Employee Details" navItems={navItems}>
+      <AppShell title="Employee Details">
         <div className="h-64 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
         </div>
-      </DashboardLayout>
+      </AppShell>
     );
   }
 
   if (!employee) {
     return (
-      <DashboardLayout title="Employee Not Found" navItems={navItems}>
+      <AppShell title="Employee Not Found">
         <div className="h-64 flex flex-col items-center justify-center">
           <p className="text-slate-500 mb-4">Employee not found</p>
           <Button onClick={() => setLocation("/employees")}>
@@ -167,7 +167,7 @@ export default function EmployeeDetail() {
             Back to Employees
           </Button>
         </div>
-      </DashboardLayout>
+      </AppShell>
     );
   }
 
@@ -177,9 +177,9 @@ export default function EmployeeDetail() {
   };
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title={`${employee.legalFirstName} ${employee.legalLastName}`}
-      navItems={navItems}
+     
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setLocation("/employees")}>
@@ -941,6 +941,6 @@ export default function EmployeeDetail() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

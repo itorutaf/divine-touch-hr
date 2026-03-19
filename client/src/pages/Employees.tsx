@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -181,9 +181,8 @@ export default function Employees() {
   const ServiceLineIcon = currentServiceLine.icon;
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title="Employees" 
-      navItems={navItems}
       actions={
         (user?.role === "admin" || user?.role === "hr") && (
           <Button onClick={() => setLocation("/employees/new")} className="bg-emerald-600 hover:bg-emerald-700">
@@ -408,6 +407,6 @@ export default function Employees() {
           </Card>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

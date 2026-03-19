@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -86,9 +86,8 @@ export default function Settings() {
   };
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title="Settings"
-      navItems={navItems}
     >
       <div className="max-w-5xl space-y-6">
         <Tabs defaultValue="notifications" className="space-y-6">
@@ -495,6 +494,6 @@ export default function Settings() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import DashboardLayout from "@/components/DashboardLayout";
+import AppShell from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -89,9 +89,8 @@ export default function Users() {
   };
 
   return (
-    <DashboardLayout 
+    <AppShell 
       title="User Management"
-      navItems={navItems}
     >
       <div className="space-y-6">
         {/* Role Legend */}
@@ -180,6 +179,6 @@ export default function Users() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

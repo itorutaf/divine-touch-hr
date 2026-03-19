@@ -1,7 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import { Users, ClipboardCheck, Shield, BarChart3 } from "lucide-react";
@@ -31,15 +30,15 @@ export default function Home() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-emerald-600 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">DT</span>
+              <span className="text-white font-bold text-lg">CB</span>
             </div>
             <div>
-              <h1 className="font-semibold text-slate-900">Divine Touch Home Care</h1>
-              <p className="text-xs text-slate-500">HR Onboarding System</p>
+              <h1 className="font-semibold text-slate-900">CareBase</h1>
+              <p className="text-xs text-slate-500">Home Care Operations Platform</p>
             </div>
           </div>
           <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
-            <a href={getLoginUrl()}>Sign In</a>
+            <a href={"/login"}>Sign In</a>
           </Button>
         </div>
       </header>
@@ -55,7 +54,7 @@ export default function Home() {
             Track candidates through every phase of onboarding with automated workflows and compliance tracking.
           </p>
           <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700">
-            <a href={getLoginUrl()}>Get Started</a>
+            <a href={"/login"}>Get Started</a>
           </Button>
         </div>
       </section>
@@ -138,7 +137,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t bg-white py-8">
         <div className="container text-center text-slate-500 text-sm">
-          <p>&copy; {new Date().getFullYear()} Divine Touch Home Care. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} CareBase. All rights reserved.</p>
         </div>
       </footer>
     </div>
