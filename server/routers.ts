@@ -1585,7 +1585,7 @@ export const appRouter = router({
   // ── Authorizations ────────────────────────────────────────────────
   authorizations: router({
     list: protectedProcedure.query(async () => {
-      return db.getAllAuthorizations();
+      return db.getAllAuthorizationsWithClients();
     }),
 
     getByClientId: protectedProcedure

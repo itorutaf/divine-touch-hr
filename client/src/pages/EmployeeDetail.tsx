@@ -29,10 +29,10 @@ import { trpc } from "@/lib/trpc";
 import { useLocation, useParams } from "wouter";
 import { useState } from "react";
 import { toast } from "sonner";
-import { 
+import {
   Users, TrendingUp, ClipboardCheck, AlertTriangle, Clock,
   ArrowLeft, User, FileText, Shield, Briefcase, CheckCircle2,
-  XCircle, History, ExternalLink, Edit2, Save
+  XCircle, History, ExternalLink, Edit2, Save, Send, Loader2, Ban, PenTool
 } from "lucide-react";
 import DocumentUpload from "@/components/DocumentUpload";
 import DocumentList from "@/components/DocumentList";
@@ -58,6 +58,163 @@ const GATE_DESCRIPTIONS: Record<string, string> = {
   EVV_HHA_VERIFICATION: "Confirm EVV/HHA profile created and verified",
   SUPERVISOR_READY_SIGNOFF: "Final sign-off that employee is ready for first shift",
 };
+
+/**
+ * DocuSign Packets Card — interactive send/sign/void for Packet 1 & 2
+ */
+function DocuSignPacketsCard({ employee, employeeId, onRefresh, isHR }: {
+  employee: any;
+  employeeId: number;
+  onRefresh: () => void;
+  isHR: boolean;
+}) {
+  const sendPacket = trpc.docusign.sendPacket.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Packet sent — envelope ${(data as any)?.envelopeId || ""}`);
+      onRefresh();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const voidEnvelope = trpc.docusign.voidEnvelope.useMutation({
+    onSuccess: () => {
+      toast.success("Envelope voided");
+      onRefresh();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  function PacketRow({ num, status, envelopeId, completedDate }: {
+    num: 1 | 2;
+    status: string | null;
+    envelopeId: string | null;
+    completedDate: string | null;
+  }) {
+    const isSent = !!envelopeId;
+    const isCompleted = status === "Completed";
+    const isDeclined = status === "Declined";
+    const isSending = sendPacket.isPending;
+    const isVoiding = voidEnvelope.isPending;
+
+    return (
+      <div className={`p-4 rounded-lg border ${isDeclined ? "border-red-500/30 bg-red-500/[0.04]" : ""}`}>
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-medium">Packet {num}</span>
+          <Badge className={
+            isCompleted ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" :
+            isDeclined ? "bg-red-500/10 text-red-700 dark:text-red-400" :
+            status === "Sent" || status === "Delivered" ? "bg-blue-500/10 text-blue-700 dark:text-blue-400" :
+            "bg-muted text-muted-foreground"
+          }>
+            {status || "Not Sent"}
+          </Badge>
+        </div>
+        {envelopeId && (
+          <p className="text-xs font-mono text-muted-foreground mb-1 truncate" title={envelopeId}>
+            Envelope: {envelopeId}
+          </p>
+        )}
+        {completedDate && (
+          <p className="text-xs text-muted-foreground mb-2">
+            Completed: {new Date(completedDate).toLocaleDateString()}
+          </p>
+        )}
+
+        {/* Action buttons */}
+        {isHR && (
+          <div className="flex gap-2 mt-3">
+            {!isSent && (
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs"
+                disabled={isSending}
+                onClick={() => sendPacket.mutate({ employeeId, packetType: String(num) as "1" | "2" })}
+              >
+                {isSending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Send className="h-3.5 w-3.5 mr-1" />}
+                Send Packet {num}
+              </Button>
+            )}
+            {isSent && !isCompleted && !isDeclined && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    // Open signing URL in new tab
+                    window.open(`/api/docusign/sign?envelopeId=${envelopeId}&employeeId=${employeeId}`, "_blank");
+                  }}
+                >
+                  <PenTool className="h-3.5 w-3.5 mr-1" />
+                  Preview / Sign
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs text-red-600 hover:text-red-700"
+                  disabled={isVoiding}
+                  onClick={() => {
+                    if (confirm("Void this envelope? The signer will be notified.")) {
+                      voidEnvelope.mutate({ envelopeId: envelopeId!, reason: "Voided by HR" });
+                    }
+                  }}
+                >
+                  {isVoiding ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Ban className="h-3.5 w-3.5 mr-1" />}
+                  Void
+                </Button>
+              </>
+            )}
+            {(isDeclined) && (
+              <Button
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700 h-7 text-xs"
+                disabled={isSending}
+                onClick={() => sendPacket.mutate({ employeeId, packetType: String(num) as "1" | "2" })}
+              >
+                {isSending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Send className="h-3.5 w-3.5 mr-1" />}
+                Re-Send
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <PenTool className="h-4 w-4" />
+          DocuSign Packets
+        </CardTitle>
+        <CardDescription>Employment agreements & consent packages</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <PacketRow
+          num={1}
+          status={employee.dsPacket1Status}
+          envelopeId={employee.dsPacket1EnvelopeId}
+          completedDate={employee.dsPacket1CompletedDate}
+        />
+        <PacketRow
+          num={2}
+          status={employee.dsPacket2Status}
+          envelopeId={employee.dsPacket2EnvelopeId}
+          completedDate={employee.dsPacket2CompletedDate}
+        />
+        {employee.dsPacket1Status === "Completed" && employee.dsPacket2Status === "Completed" && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <span className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">
+              Both packets complete — ready for HR completeness review
+            </span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function EmployeeDetail() {
   const { user } = useAuth();
@@ -488,53 +645,7 @@ export default function EmployeeDetail() {
             <Separator className="my-6" />
             
             <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>DocuSign Packets</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 rounded-lg border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">Packet 1</span>
-                      <Badge className={
-                        employee.dsPacket1Status === "Completed" ? "bg-emerald-100 text-emerald-700" :
-                        employee.dsPacket1Status === "Sent" ? "bg-blue-100 text-blue-700" :
-                        "bg-muted text-foreground"
-                      }>
-                        {employee.dsPacket1Status || "Not Sent"}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Envelope ID: {employee.dsPacket1EnvelopeId || "-"}
-                    </p>
-                    {employee.dsPacket1CompletedDate && (
-                      <p className="text-sm text-muted-foreground">
-                        Completed: {new Date(employee.dsPacket1CompletedDate).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                  <div className="p-4 rounded-lg border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">Packet 2</span>
-                      <Badge className={
-                        employee.dsPacket2Status === "Completed" ? "bg-emerald-100 text-emerald-700" :
-                        employee.dsPacket2Status === "Sent" ? "bg-blue-100 text-blue-700" :
-                        "bg-muted text-foreground"
-                      }>
-                        {employee.dsPacket2Status || "Not Sent"}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Envelope ID: {employee.dsPacket2EnvelopeId || "-"}
-                    </p>
-                    {employee.dsPacket2CompletedDate && (
-                      <p className="text-sm text-muted-foreground">
-                        Completed: {new Date(employee.dsPacket2CompletedDate).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <DocuSignPacketsCard employee={employee} employeeId={employeeId} onRefresh={refetch} isHR={user?.role === "admin" || user?.role === "hr"} />
 
               <Card>
                 <CardHeader>

@@ -1171,6 +1171,34 @@ export async function getAllAuthorizations() {
   return db.select().from(authorizations).orderBy(desc(authorizations.createdAt));
 }
 
+/**
+ * Get all authorizations with client names joined in.
+ * Used by the Authorization Tracker page to avoid N+1 queries.
+ */
+export async function getAllAuthorizationsWithClients() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: authorizations.id,
+      clientId: authorizations.clientId,
+      clientFirstName: clients.firstName,
+      clientLastName: clients.lastName,
+      mco: authorizations.mco,
+      serviceType: authorizations.serviceType,
+      authorizedHoursPerWeek: authorizations.authorizedHoursPerWeek,
+      startDate: authorizations.startDate,
+      endDate: authorizations.endDate,
+      authorizationNumber: authorizations.authorizationNumber,
+      status: authorizations.status,
+      notes: authorizations.notes,
+      createdAt: authorizations.createdAt,
+    })
+    .from(authorizations)
+    .leftJoin(clients, eq(authorizations.clientId, clients.id))
+    .orderBy(desc(authorizations.createdAt));
+}
+
 export async function getAuthorizationsByClientId(clientId: number) {
   const db = await getDb();
   if (!db) return [];
