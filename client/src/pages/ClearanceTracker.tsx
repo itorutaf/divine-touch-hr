@@ -4,44 +4,49 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ShieldCheck, ShieldAlert, Clock, Search, Send, Eye, Download } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Clock, Search, Send, Eye, Download, Plus } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
 
-type ClearanceStatus = "clear" | "pending" | "expiring" | "expired" | "not_started";
+type ClearanceStatus = "clear" | "pending" | "initiated" | "expiring" | "expired" | "not_started" | "flagged";
 
-const STATUS_STYLES: Record<ClearanceStatus, { bg: string; label: string }> = {
+const STATUS_STYLES: Record<string, { bg: string; label: string }> = {
   clear: { bg: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20", label: "Clear" },
   pending: { bg: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20", label: "Pending" },
+  initiated: { bg: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20", label: "Initiated" },
   expiring: { bg: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20", label: "Expiring" },
   expired: { bg: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20", label: "Expired" },
+  flagged: { bg: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20", label: "Flagged" },
   not_started: { bg: "bg-muted text-muted-foreground", label: "Not Started" },
 };
 
-const MOCK_WORKERS = [
-  { id: 1, name: "Maria Santos", serviceLine: "OLTL", patch: { status: "clear" as ClearanceStatus, expiry: "2029-04-15" }, fbi: { status: "expired" as ClearanceStatus, expiry: "2026-03-15" }, childline: { status: "clear" as ClearanceStatus, expiry: "2029-06-20" } },
-  { id: 2, name: "Chen Wei", serviceLine: "OLTL", patch: { status: "clear" as ClearanceStatus, expiry: "2030-01-10" }, fbi: { status: "clear" as ClearanceStatus, expiry: "2030-01-10" }, childline: { status: "pending" as ClearanceStatus, expiry: null } },
-  { id: 3, name: "James Wilson", serviceLine: "ODP", patch: { status: "clear" as ClearanceStatus, expiry: "2028-11-05" }, fbi: { status: "pending" as ClearanceStatus, expiry: null }, childline: { status: "clear" as ClearanceStatus, expiry: "2028-11-05" } },
-  { id: 4, name: "Fatima Ali", serviceLine: "OLTL", patch: { status: "expiring" as ClearanceStatus, expiry: "2026-05-01" }, fbi: { status: "clear" as ClearanceStatus, expiry: "2029-08-15" }, childline: { status: "clear" as ClearanceStatus, expiry: "2029-08-15" } },
-  { id: 5, name: "Andre Brooks", serviceLine: "ODP", patch: { status: "clear" as ClearanceStatus, expiry: "2030-02-20" }, fbi: { status: "not_started" as ClearanceStatus, expiry: null }, childline: { status: "not_started" as ClearanceStatus, expiry: null } },
-  { id: 6, name: "Sarah Thompson", serviceLine: "Skilled", patch: { status: "clear" as ClearanceStatus, expiry: "2029-10-01" }, fbi: { status: "clear" as ClearanceStatus, expiry: "2029-10-01" }, childline: { status: "clear" as ClearanceStatus, expiry: "2029-10-01" } },
-  { id: 7, name: "Lisa Park", serviceLine: "OLTL", patch: { status: "clear" as ClearanceStatus, expiry: "2030-03-15" }, fbi: { status: "clear" as ClearanceStatus, expiry: "2030-03-15" }, childline: { status: "expiring" as ClearanceStatus, expiry: "2026-04-20" } },
-  { id: 8, name: "Miguel Rodriguez", serviceLine: "OLTL", patch: { status: "clear" as ClearanceStatus, expiry: "2029-12-01" }, fbi: { status: "clear" as ClearanceStatus, expiry: "2029-12-01" }, childline: { status: "clear" as ClearanceStatus, expiry: "2029-12-01" } },
-];
+interface WorkerClearance {
+  id: number;
+  name: string;
+  employeeId: string;
+  serviceLine: string | null;
+  patch: { status: string; expiry: string | null };
+  fbi: { status: string; expiry: string | null };
+  childline: { status: string; expiry: string | null };
+}
 
-function getOverallStatus(w: typeof MOCK_WORKERS[0]): ClearanceStatus {
+function getOverallStatus(w: WorkerClearance): string {
   const statuses = [w.patch.status, w.fbi.status, w.childline.status];
+  if (statuses.includes("flagged")) return "flagged";
   if (statuses.includes("expired")) return "expired";
   if (statuses.includes("not_started")) return "not_started";
-  if (statuses.includes("pending")) return "pending";
+  if (statuses.includes("pending") || statuses.includes("initiated")) return "pending";
   if (statuses.includes("expiring")) return "expiring";
   return "clear";
 }
 
-function ClearanceCell({ status, expiry }: { status: ClearanceStatus; expiry: string | null }) {
-  const s = STATUS_STYLES[status];
+function ClearanceCell({ status, expiry }: { status: string; expiry: string | null }) {
+  const s = STATUS_STYLES[status] || STATUS_STYLES.not_started;
   return (
     <div className="flex flex-col items-center gap-0.5">
       <Badge variant="outline" className={`text-[10px] ${s.bg}`}>{s.label}</Badge>
@@ -50,25 +55,120 @@ function ClearanceCell({ status, expiry }: { status: ClearanceStatus; expiry: st
   );
 }
 
+/**
+ * Derive clearance status from employee fields + clearance records.
+ * Uses the employee's boolean flags (patchReceived, fbiReceived, etc.) as primary
+ * and falls back to clearance table records for richer detail.
+ */
+function deriveWorkerClearances(
+  employees: any[],
+  clearancesByEmployee: Record<number, any[]>
+): WorkerClearance[] {
+  const today = new Date();
+  const sixtyDaysFromNow = new Date();
+  sixtyDaysFromNow.setDate(sixtyDaysFromNow.getDate() + 60);
+
+  return employees.map((emp) => {
+    const clearances = clearancesByEmployee[emp.id] || [];
+
+    function getStatus(type: string, receivedFlag: boolean, dateStr: string | null): { status: string; expiry: string | null } {
+      // Check clearance table first
+      const record = clearances.find((c: any) => c.type === type);
+      if (record) {
+        let status = record.status || "not_started";
+        const expiry = record.expirationDate || null;
+
+        // Check if expiring/expired based on dates
+        if (status === "clear" && expiry) {
+          const expDate = new Date(expiry);
+          if (expDate < today) status = "expired";
+          else if (expDate < sixtyDaysFromNow) status = "expiring";
+        }
+
+        return { status, expiry };
+      }
+
+      // Fall back to employee fields
+      if (receivedFlag) {
+        const expiry = dateStr ? calculateExpiry(dateStr) : null;
+        if (expiry) {
+          const expDate = new Date(expiry);
+          if (expDate < today) return { status: "expired", expiry };
+          if (expDate < sixtyDaysFromNow) return { status: "expiring", expiry };
+        }
+        return { status: "clear", expiry };
+      }
+
+      return { status: "not_started", expiry: null };
+    }
+
+    return {
+      id: emp.id,
+      name: `${emp.legalFirstName} ${emp.legalLastName}`,
+      employeeId: emp.employeeId,
+      serviceLine: emp.serviceLine,
+      patch: getStatus("PA_PATCH", emp.patchReceived, emp.patchDate),
+      fbi: getStatus("FBI", emp.fbiReceived, emp.fbiDate),
+      childline: getStatus("CHILDLINE", emp.childAbuseReceived, emp.childAbuseDate),
+    };
+  });
+}
+
+function calculateExpiry(submissionDate: string): string | null {
+  try {
+    const date = new Date(submissionDate);
+    date.setMonth(date.getMonth() + 60); // PA Act 153: 60-month validity
+    return date.toISOString().split("T")[0];
+  } catch {
+    return null;
+  }
+}
+
 export default function ClearanceTracker() {
   const [search, setSearch] = useState("");
-  const filtered = MOCK_WORKERS.filter((w) =>
+  const [, navigate] = useLocation();
+
+  // Fetch all employees and their clearances
+  const { data: employees, isLoading } = trpc.employees.list.useQuery();
+  const { data: expiringClearances } = trpc.clearances.getExpiring.useQuery({ daysThreshold: 60 });
+
+  // Build clearance data from employees
+  // For now, we derive from employee fields since clearance records may not exist yet
+  const workers: WorkerClearance[] = employees
+    ? deriveWorkerClearances(
+        employees.filter((e: any) => e.currentPhase === "Active" || e.currentPhase === "Ready to Schedule" || e.currentPhase === "Provisioning"),
+        {} // Will be populated when clearance records exist
+      )
+    : [];
+
+  const filtered = workers.filter((w) =>
     !search || w.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const allClear = MOCK_WORKERS.filter((w) => getOverallStatus(w) === "clear").length;
-  const pending = MOCK_WORKERS.filter((w) => getOverallStatus(w) === "pending" || getOverallStatus(w) === "not_started").length;
-  const expiring = MOCK_WORKERS.filter((w) => getOverallStatus(w) === "expiring").length;
-  const expired = MOCK_WORKERS.filter((w) => getOverallStatus(w) === "expired").length;
+  const allClear = workers.filter((w) => getOverallStatus(w) === "clear").length;
+  const pending = workers.filter((w) => ["pending", "not_started"].includes(getOverallStatus(w))).length;
+  const expiring = workers.filter((w) => getOverallStatus(w) === "expiring").length;
+  const expired = workers.filter((w) => ["expired", "flagged"].includes(getOverallStatus(w))).length;
 
   return (
     <AppShell title="Background Check Tracker">
       <div className="space-y-4 max-w-[1440px]">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="All Clear" value={allClear} icon={ShieldCheck} accentColor="emerald" />
-          <StatCard title="Pending / Not Started" value={pending} icon={Clock} accentColor="blue" />
-          <StatCard title="Expiring (60 days)" value={expiring} icon={ShieldAlert} accentColor="amber" />
-          <StatCard title="Expired" value={expired} icon={ShieldAlert} accentColor="red" />
+          {isLoading ? (
+            [1, 2, 3, 4].map((i) => (
+              <Card key={i} className="p-5 bg-card">
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-8 w-16 mb-1" />
+              </Card>
+            ))
+          ) : (
+            <>
+              <StatCard title="All Clear" value={allClear} icon={ShieldCheck} accentColor="emerald" />
+              <StatCard title="Pending / Not Started" value={pending} icon={Clock} accentColor="blue" />
+              <StatCard title="Expiring (60 days)" value={expiring} icon={ShieldAlert} accentColor="amber" />
+              <StatCard title="Expired / Flagged" value={expired} icon={ShieldAlert} accentColor="red" />
+            </>
+          )}
         </div>
 
         <Card className="bg-card shadow-sm p-4">
@@ -95,30 +195,51 @@ export default function ClearanceTracker() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((w) => {
-                const overall = getOverallStatus(w);
-                const os = STATUS_STYLES[overall];
-                return (
-                  <TableRow key={w.id} className={overall === "expired" ? "bg-red-500/10" : overall === "expiring" ? "bg-amber-500/10" : ""}>
-                    <TableCell className="font-medium text-sm">{w.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-[10px]">{w.serviceLine}</Badge>
-                    </TableCell>
-                    <TableCell className="text-center"><ClearanceCell status={w.patch.status} expiry={w.patch.expiry} /></TableCell>
-                    <TableCell className="text-center"><ClearanceCell status={w.fbi.status} expiry={w.fbi.expiry} /></TableCell>
-                    <TableCell className="text-center"><ClearanceCell status={w.childline.status} expiry={w.childline.expiry} /></TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className={`text-[10px] ${os.bg}`}>{os.label}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-emerald-600"><Send className="h-3.5 w-3.5" /></Button>
-                      </div>
-                    </TableCell>
+              {isLoading ? (
+                [1, 2, 3, 4, 5].map((i) => (
+                  <TableRow key={i}>
+                    {[1, 2, 3, 4, 5, 6, 7].map((j) => (
+                      <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                    ))}
                   </TableRow>
-                );
-              })}
+                ))
+              ) : filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    {search ? "No workers match your search" : "No employees in clearance-eligible phases"}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((w) => {
+                  const overall = getOverallStatus(w);
+                  const os = STATUS_STYLES[overall] || STATUS_STYLES.not_started;
+                  return (
+                    <TableRow
+                      key={w.id}
+                      className={`cursor-pointer hover:bg-muted/50 transition-colors ${overall === "expired" || overall === "flagged" ? "bg-red-500/[0.04]" : overall === "expiring" ? "bg-amber-500/[0.04]" : ""}`}
+                      onClick={() => navigate(`/employees/${w.id}`)}
+                    >
+                      <TableCell className="font-medium text-sm">{w.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-[10px]">{w.serviceLine || "—"}</Badge>
+                      </TableCell>
+                      <TableCell className="text-center"><ClearanceCell status={w.patch.status} expiry={w.patch.expiry} /></TableCell>
+                      <TableCell className="text-center"><ClearanceCell status={w.fbi.status} expiry={w.fbi.expiry} /></TableCell>
+                      <TableCell className="text-center"><ClearanceCell status={w.childline.status} expiry={w.childline.expiry} /></TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline" className={`text-[10px] ${os.bg}`}>{os.label}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); navigate(`/employees/${w.id}`); }}>
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </Card>
