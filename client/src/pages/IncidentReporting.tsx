@@ -19,16 +19,16 @@ const MOCK_INCIDENTS = [
 ];
 
 const SEVERITY_STYLES = {
-  critical: "bg-red-50 text-red-700 border-red-200",
-  major: "bg-orange-50 text-orange-700 border-orange-200",
-  minor: "bg-amber-50 text-amber-700 border-amber-200",
+  critical: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
+  major: "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200",
+  minor: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
 };
 
 const STATUS_STYLES = {
-  open: "bg-red-50 text-red-700",
-  investigating: "bg-blue-50 text-blue-700",
-  resolved: "bg-emerald-50 text-emerald-700",
-  closed: "bg-slate-100 text-slate-600",
+  open: "bg-red-500/10 text-red-700 dark:text-red-400",
+  investigating: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  resolved: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  closed: "bg-muted text-muted-foreground",
 };
 
 function TimelineCheck({ done, label }: { done: boolean; label: string }) {
@@ -37,7 +37,7 @@ function TimelineCheck({ done, label }: { done: boolean; label: string }) {
       {done ? (
         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
       ) : (
-        <XCircle className="h-3.5 w-3.5 text-slate-300" />
+        <XCircle className="h-3.5 w-3.5 text-muted-foreground" />
       )}
     </div>
   );
@@ -65,14 +65,14 @@ export default function IncidentReporting() {
             { label: "Resolved", count: MOCK_INCIDENTS.filter((i) => i.status === "resolved").length, color: "border-l-emerald-500" },
             { label: "Closed", count: MOCK_INCIDENTS.filter((i) => i.status === "closed").length, color: "border-l-slate-400" },
           ].map((s) => (
-            <Card key={s.label} className={`p-4 border-l-4 ${s.color} bg-white shadow-sm`}>
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{s.label}</p>
-              <p className="text-2xl font-bold text-slate-900 tabular-nums">{s.count}</p>
+            <Card key={s.label} className={`p-4 border-l-4 ${s.color} bg-card shadow-sm`}>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{s.label}</p>
+              <p className="text-2xl font-bold text-foreground tabular-nums">{s.count}</p>
             </Card>
           ))}
         </div>
 
-        <Card className="bg-white shadow-sm p-4">
+        <Card className="bg-card shadow-sm p-4">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Filter by status" />
@@ -87,7 +87,7 @@ export default function IncidentReporting() {
           </Select>
         </Card>
 
-        <Card className="bg-white shadow-sm overflow-hidden">
+        <Card className="bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -109,7 +109,7 @@ export default function IncidentReporting() {
                   <TableCell className="font-mono text-xs">{inc.id}</TableCell>
                   <TableCell className="text-sm">{inc.date}</TableCell>
                   <TableCell className="font-medium text-sm">{inc.client}</TableCell>
-                  <TableCell className="text-sm text-slate-600">{inc.category.replace(/_/g, " ")}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{inc.category.replace(/_/g, " ")}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={`text-[10px] ${SEVERITY_STYLES[inc.severity]}`}>{inc.severity}</Badge>
                   </TableCell>
@@ -125,7 +125,7 @@ export default function IncidentReporting() {
                       <TimelineCheck done={inc.investigationCompleted} label="Investigation Complete (30d)" />
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs text-slate-500">{inc.deadline}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{inc.deadline}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button>
                   </TableCell>

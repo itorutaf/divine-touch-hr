@@ -136,7 +136,7 @@ export default function Settings() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+                  <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
                     <p className="text-2xl font-bold text-red-700">{expirationSummary?.expired || 0}</p>
                     <p className="text-sm text-red-600">Expired</p>
                   </div>
@@ -144,17 +144,17 @@ export default function Settings() {
                     <p className="text-2xl font-bold text-orange-700">{expirationSummary?.expiring7Day || 0}</p>
                     <p className="text-sm text-orange-600">Expiring in 7 days</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
                     <p className="text-2xl font-bold text-amber-700">{expirationSummary?.expiring14Day || 0}</p>
                     <p className="text-sm text-amber-600">Expiring in 14 days</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                  <div className="p-4 rounded-lg bg-blue-50 border border-blue-500/20">
                     <p className="text-2xl font-bold text-blue-700">{expirationSummary?.expiring30Day || 0}</p>
                     <p className="text-sm text-blue-600">Expiring in 30 days</p>
                   </div>
                 </div>
                 {notificationSettings?.lastCheckRun && (
-                  <p className="text-sm text-slate-500 mt-4">
+                  <p className="text-sm text-muted-foreground mt-4">
                     Last check: {new Date(notificationSettings.lastCheckRun).toLocaleString()}
                   </p>
                 )}
@@ -174,7 +174,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">30-Day Warning</p>
-                    <p className="text-sm text-slate-500">Alert when documents expire within 30 days</p>
+                    <p className="text-sm text-muted-foreground">Alert when documents expire within 30 days</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.alertThreshold30Day ?? true}
@@ -185,7 +185,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">14-Day Warning</p>
-                    <p className="text-sm text-slate-500">Alert when documents expire within 14 days</p>
+                    <p className="text-sm text-muted-foreground">Alert when documents expire within 14 days</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.alertThreshold14Day ?? true}
@@ -196,7 +196,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">7-Day Warning</p>
-                    <p className="text-sm text-slate-500">Alert when documents expire within 7 days</p>
+                    <p className="text-sm text-muted-foreground">Alert when documents expire within 7 days</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.alertThreshold7Day ?? true}
@@ -207,7 +207,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Expired Alert</p>
-                    <p className="text-sm text-slate-500">Alert when documents have expired</p>
+                    <p className="text-sm text-muted-foreground">Alert when documents have expired</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.alertThresholdExpired ?? true}
@@ -230,7 +230,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Clearances</p>
-                    <p className="text-sm text-slate-500">PATCH, FBI, Child Abuse clearances</p>
+                    <p className="text-sm text-muted-foreground">PATCH, FBI, Child Abuse clearances</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.monitorClearances ?? true}
@@ -241,7 +241,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Certifications</p>
-                    <p className="text-sm text-slate-500">CPR, training certificates</p>
+                    <p className="text-sm text-muted-foreground">CPR, training certificates</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.monitorCertifications ?? true}
@@ -252,7 +252,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Licenses</p>
-                    <p className="text-sm text-slate-500">Professional licenses for skilled roles</p>
+                    <p className="text-sm text-muted-foreground">Professional licenses for skilled roles</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.monitorLicenses ?? true}
@@ -263,7 +263,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Medical Documents</p>
-                    <p className="text-sm text-slate-500">Physical exams, TB tests</p>
+                    <p className="text-sm text-muted-foreground">Physical exams, TB tests</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.monitorMedical ?? true}
@@ -286,7 +286,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Daily Digest</p>
-                    <p className="text-sm text-slate-500">Send a daily summary of all expiring documents</p>
+                    <p className="text-sm text-muted-foreground">Send a daily summary of all expiring documents</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.dailyDigest ?? true}
@@ -297,7 +297,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Immediate Alerts</p>
-                    <p className="text-sm text-slate-500">Send alerts as soon as documents enter warning period</p>
+                    <p className="text-sm text-muted-foreground">Send alerts as soon as documents enter warning period</p>
                   </div>
                   <Switch 
                     checked={notificationSettings?.immediateAlerts ?? false}
@@ -332,7 +332,7 @@ export default function Settings() {
                               <Badge variant="outline" className="text-xs">
                                 {log.notificationType.replace(/_/g, " ")}
                               </Badge>
-                              <span className="text-xs text-slate-500">
+                              <span className="text-xs text-muted-foreground">
                                 {new Date(log.sentAt).toLocaleString()}
                               </span>
                             </div>
@@ -347,7 +347,7 @@ export default function Settings() {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                       <Bell className="h-8 w-8 mb-2" />
                       <p>No notifications sent yet</p>
                     </div>
@@ -375,11 +375,11 @@ export default function Settings() {
                     </div>
                     <div>
                       <p className="font-medium">Google Sheets Sync</p>
-                      <p className="text-sm text-slate-500">Bidirectional sync with existing tracker</p>
+                      <p className="text-sm text-muted-foreground">Bidirectional sync with existing tracker</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <Badge variant="outline" className="text-amber-600 border-amber-200">
+                    <Badge variant="outline" className="text-amber-600 border-amber-500/20">
                       Not Configured
                     </Badge>
                     <Button variant="outline" size="sm" onClick={() => toast.info("Feature coming soon")}>
@@ -395,11 +395,11 @@ export default function Settings() {
                     </div>
                     <div>
                       <p className="font-medium">DocuSign</p>
-                      <p className="text-sm text-slate-500">Document signing integration</p>
+                      <p className="text-sm text-muted-foreground">Document signing integration</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <Badge variant="outline" className="text-amber-600 border-amber-200">
+                    <Badge variant="outline" className="text-amber-600 border-amber-500/20">
                       Not Configured
                     </Badge>
                     <Button variant="outline" size="sm" onClick={() => toast.info("Feature coming soon")}>
@@ -415,11 +415,11 @@ export default function Settings() {
                     </div>
                     <div>
                       <p className="font-medium">EVV/HHA System</p>
-                      <p className="text-sm text-slate-500">Electronic Visit Verification</p>
+                      <p className="text-sm text-muted-foreground">Electronic Visit Verification</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <Badge variant="outline" className="text-amber-600 border-amber-200">
+                    <Badge variant="outline" className="text-amber-600 border-amber-500/20">
                       Not Configured
                     </Badge>
                     <Button variant="outline" size="sm" onClick={() => toast.info("Feature coming soon")}>
@@ -442,20 +442,20 @@ export default function Settings() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-slate-50">
-                    <p className="text-sm text-slate-500">Application</p>
+                  <div className="p-4 rounded-lg bg-muted">
+                    <p className="text-sm text-muted-foreground">Application</p>
                     <p className="font-medium">Divine Touch HR Onboarding</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-slate-50">
-                    <p className="text-sm text-slate-500">Version</p>
+                  <div className="p-4 rounded-lg bg-muted">
+                    <p className="text-sm text-muted-foreground">Version</p>
                     <p className="font-medium">1.0.0</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-slate-50">
-                    <p className="text-sm text-slate-500">Environment</p>
+                  <div className="p-4 rounded-lg bg-muted">
+                    <p className="text-sm text-muted-foreground">Environment</p>
                     <Badge className="bg-emerald-100 text-emerald-700">Production</Badge>
                   </div>
-                  <div className="p-4 rounded-lg bg-slate-50">
-                    <p className="text-sm text-slate-500">Database Status</p>
+                  <div className="p-4 rounded-lg bg-muted">
+                    <p className="text-sm text-muted-foreground">Database Status</p>
                     <Badge className="bg-emerald-100 text-emerald-700">Connected</Badge>
                   </div>
                 </div>
@@ -474,7 +474,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div>
                     <p className="font-medium">Export All Employees</p>
-                    <p className="text-sm text-slate-500">Download complete employee data as CSV</p>
+                    <p className="text-sm text-muted-foreground">Download complete employee data as CSV</p>
                   </div>
                   <Button variant="outline" onClick={() => toast.info("Feature coming soon")}>
                     Export CSV
@@ -483,7 +483,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between p-4 rounded-lg border">
                   <div>
                     <p className="font-medium">Export Audit Logs</p>
-                    <p className="text-sm text-slate-500">Download complete audit trail</p>
+                    <p className="text-sm text-muted-foreground">Download complete audit trail</p>
                   </div>
                   <Button variant="outline" onClick={() => toast.info("Feature coming soon")}>
                     Export Logs

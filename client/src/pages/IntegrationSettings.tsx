@@ -15,7 +15,7 @@ type ConnectionStatus = "connected" | "disconnected" | "error";
 
 const STATUS_STYLES: Record<ConnectionStatus, { dot: string; text: string; label: string }> = {
   connected: { dot: "bg-emerald-500", text: "text-emerald-700", label: "Connected" },
-  disconnected: { dot: "bg-slate-300", text: "text-slate-500", label: "Not Configured" },
+  disconnected: { dot: "bg-muted-foreground/30", text: "text-muted-foreground", label: "Not Configured" },
   error: { dot: "bg-red-500", text: "text-red-600", label: "Error" },
 };
 
@@ -41,16 +41,16 @@ const INTEGRATIONS: {
 function IntegrationCard({ integration }: { integration: typeof INTEGRATIONS[0] }) {
   const status = STATUS_STYLES[integration.status];
   return (
-    <Card className="bg-white shadow-sm hover:shadow transition-shadow">
+    <Card className="bg-card shadow-sm hover:shadow transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-              <Plug className="h-5 w-5 text-slate-400" />
+            <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+              <Plug className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-slate-900">{integration.name}</h4>
-              <p className="text-xs text-slate-500 mt-0.5">{integration.description}</p>
+              <h4 className="text-sm font-semibold text-foreground">{integration.name}</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">{integration.description}</p>
               <Badge variant="outline" className="text-[9px] mt-1.5">{integration.category}</Badge>
             </div>
           </div>
@@ -60,14 +60,14 @@ function IntegrationCard({ integration }: { integration: typeof INTEGRATIONS[0] 
           </div>
         </div>
         {integration.lastSync && (
-          <p className="text-[10px] text-slate-400 mt-2 flex items-center gap-1">
+          <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
             <RefreshCw className="h-3 w-3" /> Last sync: {integration.lastSync}
           </p>
         )}
         <div className="flex gap-2 mt-3">
           <Button variant="outline" size="sm" className="h-7 text-xs flex-1">Configure</Button>
           {integration.status === "connected" && (
-            <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500">Disconnect</Button>
+            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground">Disconnect</Button>
           )}
         </div>
       </CardContent>
@@ -88,7 +88,7 @@ export default function IntegrationSettings() {
 
           <TabsContent value="integrations" className="mt-4">
             <div className="mb-4">
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-foreground">
                 Connect external services to automate workflows. Each integration requires API credentials from the provider.
               </p>
             </div>
@@ -100,7 +100,7 @@ export default function IntegrationSettings() {
           </TabsContent>
 
           <TabsContent value="agency" className="mt-4">
-            <Card className="bg-white shadow-sm">
+            <Card className="bg-card shadow-sm">
               <CardHeader><CardTitle className="text-sm">Agency Information</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,7 +147,7 @@ export default function IntegrationSettings() {
           </TabsContent>
 
           <TabsContent value="notifications" className="mt-4">
-            <Card className="bg-white shadow-sm">
+            <Card className="bg-card shadow-sm">
               <CardHeader><CardTitle className="text-sm">Notification Preferences</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {[
@@ -161,7 +161,7 @@ export default function IntegrationSettings() {
                   { label: "LEIE/SAM screening results", key: "leie" },
                 ].map((n) => (
                   <div key={n.key} className="flex items-center justify-between">
-                    <span className="text-sm text-slate-700">{n.label}</span>
+                    <span className="text-sm text-foreground">{n.label}</span>
                     <Switch defaultChecked />
                   </div>
                 ))}

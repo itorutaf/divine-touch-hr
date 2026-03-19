@@ -26,10 +26,10 @@ const CHART_DATA = MOCK_SOURCES
   .map((s) => ({ name: s.name.split(" ").slice(0, 2).join(" "), revenue: s.totalRevenue, referrals: s.totalReferrals }));
 
 const TYPE_STYLES: Record<string, string> = {
-  Hospital: "bg-blue-50 text-blue-700 border-blue-200",
-  "MCO/SC": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "Community Org": "bg-purple-50 text-purple-700 border-purple-200",
-  Direct: "bg-slate-100 text-slate-600",
+  Hospital: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  "MCO/SC": "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+  "Community Org": "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
+  Direct: "bg-muted text-muted-foreground",
 };
 
 export default function ReferralSources() {
@@ -50,28 +50,28 @@ export default function ReferralSources() {
     >
       <div className="space-y-4 max-w-[1440px]">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card className="p-4 border-l-4 border-l-blue-500 bg-white shadow-sm">
-            <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">Total Referrals</p>
-            <p className="text-2xl font-bold text-slate-900 tabular-nums">{totalReferrals}</p>
+          <Card className="p-4 border-l-4 border-l-blue-500 bg-card shadow-sm">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Total Referrals</p>
+            <p className="text-2xl font-bold text-foreground tabular-nums">{totalReferrals}</p>
           </Card>
-          <Card className="p-4 border-l-4 border-l-emerald-500 bg-white shadow-sm">
-            <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">Conversion Rate</p>
+          <Card className="p-4 border-l-4 border-l-emerald-500 bg-card shadow-sm">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Conversion Rate</p>
             <p className="text-2xl font-bold text-emerald-600 tabular-nums">{avgConversion}%</p>
           </Card>
-          <Card className="p-4 border-l-4 border-l-emerald-500 bg-white shadow-sm">
-            <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">Revenue from Referrals</p>
-            <p className="text-2xl font-bold text-slate-900 tabular-nums">${totalRevenue.toLocaleString()}</p>
-            <p className="text-xs text-slate-400">monthly</p>
+          <Card className="p-4 border-l-4 border-l-emerald-500 bg-card shadow-sm">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Revenue from Referrals</p>
+            <p className="text-2xl font-bold text-foreground tabular-nums">${totalRevenue.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground">monthly</p>
           </Card>
-          <Card className="p-4 border-l-4 border-l-amber-500 bg-white shadow-sm">
-            <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">Sources Tracked</p>
-            <p className="text-2xl font-bold text-slate-900 tabular-nums">{MOCK_SOURCES.length}</p>
+          <Card className="p-4 border-l-4 border-l-amber-500 bg-card shadow-sm">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Sources Tracked</p>
+            <p className="text-2xl font-bold text-foreground tabular-nums">{MOCK_SOURCES.length}</p>
           </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="lg:col-span-2 bg-white shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">Revenue by Source</h3>
+          <Card className="lg:col-span-2 bg-card shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Revenue by Source</h3>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={CHART_DATA} layout="vertical" barSize={16}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
@@ -83,19 +83,19 @@ export default function ReferralSources() {
             </ResponsiveContainer>
           </Card>
 
-          <Card className="bg-white shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">Top Performing Sources</h3>
+          <Card className="bg-card shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Top Performing Sources</h3>
             <div className="space-y-3">
               {MOCK_SOURCES.sort((a, b) => b.avgScore - a.avgScore).slice(0, 4).map((s, i) => (
-                <div key={s.id} className="flex items-center gap-3 p-2 rounded-lg bg-slate-50">
-                  <span className="text-xs font-bold text-slate-400 w-5 text-center">#{i + 1}</span>
+                <div key={s.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted">
+                  <span className="text-xs font-bold text-muted-foreground w-5 text-center">#{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800 truncate">{s.name}</p>
-                    <p className="text-xs text-slate-400">{s.activeClients} active clients</p>
+                    <p className="text-sm font-medium text-foreground truncate">{s.name}</p>
+                    <p className="text-xs text-muted-foreground">{s.activeClients} active clients</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-emerald-600 tabular-nums">{s.avgScore}</p>
-                    <p className="text-[10px] text-slate-400">avg score</p>
+                    <p className="text-[10px] text-muted-foreground">avg score</p>
                   </div>
                 </div>
               ))}
@@ -103,7 +103,7 @@ export default function ReferralSources() {
           </Card>
         </div>
 
-        <Card className="bg-white shadow-sm overflow-hidden">
+        <Card className="bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>

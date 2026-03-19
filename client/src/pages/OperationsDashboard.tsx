@@ -23,11 +23,11 @@ const CALLOUTS = [
 ];
 
 const SCHEDULE_STATUS = {
-  confirmed: { bg: "bg-emerald-50 text-emerald-700", label: "Confirmed" },
-  in_progress: { bg: "bg-blue-50 text-blue-700", label: "In Progress" },
-  completed: { bg: "bg-slate-100 text-slate-600", label: "Completed" },
-  unassigned: { bg: "bg-red-50 text-red-700", label: "Unassigned" },
-  needs_coverage: { bg: "bg-red-50 text-red-700", label: "Needs Coverage" },
+  confirmed: { bg: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400", label: "Confirmed" },
+  in_progress: { bg: "bg-blue-500/10 text-blue-700 dark:text-blue-400", label: "In Progress" },
+  completed: { bg: "bg-muted text-muted-foreground", label: "Completed" },
+  unassigned: { bg: "bg-red-500/10 text-red-700 dark:text-red-400", label: "Unassigned" },
+  needs_coverage: { bg: "bg-red-500/10 text-red-700 dark:text-red-400", label: "Needs Coverage" },
 };
 
 export default function OperationsDashboard() {
@@ -47,7 +47,7 @@ export default function OperationsDashboard() {
 
         {/* Call-outs */}
         {CALLOUTS.length > 0 && (
-          <Card className="bg-red-50/50 border-red-200 shadow-sm">
+          <Card className="bg-red-50/50 border-red-500/20 shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-red-800 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" /> Active Call-Outs
@@ -55,10 +55,10 @@ export default function OperationsDashboard() {
             </CardHeader>
             <CardContent>
               {CALLOUTS.map((c) => (
-                <div key={c.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-red-200">
+                <div key={c.id} className="flex items-center justify-between p-3 bg-card rounded-lg border border-red-500/20">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">{c.caregiver} called out</p>
-                    <p className="text-xs text-slate-500">{c.shift} — Client: {c.client}</p>
+                    <p className="text-sm font-medium text-foreground">{c.caregiver} called out</p>
+                    <p className="text-xs text-muted-foreground">{c.shift} — Client: {c.client}</p>
                     <p className="text-xs text-red-600 mt-0.5">{c.reason}</p>
                   </div>
                   <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">Find Coverage</Button>
@@ -69,9 +69,9 @@ export default function OperationsDashboard() {
         )}
 
         {/* Today's Schedule */}
-        <Card className="bg-white shadow-sm overflow-hidden">
+        <Card className="bg-card shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-900">Today's Schedule — March 18, 2026</h3>
+            <h3 className="text-sm font-semibold text-foreground">Today's Schedule — March 18, 2026</h3>
             <Badge variant="secondary" className="text-[10px]">{totalVisits} visits</Badge>
           </div>
           <Table>
@@ -91,11 +91,11 @@ export default function OperationsDashboard() {
                 return (
                   <TableRow key={visit.id} className={visit.status === "unassigned" ? "bg-red-50/20" : ""}>
                     <TableCell className="font-medium text-sm">{visit.client}</TableCell>
-                    <TableCell className={`text-sm ${visit.caregiver === "Unassigned" ? "text-red-500 font-medium" : "text-slate-600"}`}>
+                    <TableCell className={`text-sm ${visit.caregiver === "Unassigned" ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
                       {visit.caregiver}
                     </TableCell>
-                    <TableCell className="text-sm text-slate-600 flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-slate-400" />{visit.time}
+                    <TableCell className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />{visit.time}
                     </TableCell>
                     <TableCell className="text-right tabular-nums font-medium">{visit.hours}</TableCell>
                     <TableCell><Badge className={`text-[10px] ${s.bg}`}>{s.label}</Badge></TableCell>

@@ -61,9 +61,25 @@ const EXCEPTIONS: ExceptionItem[] = [
 // ── Component ────────────────────────────────────────────────────────
 
 export default function ExecutiveDashboard() {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+
   return (
     <AppShell title="Executive Dashboard">
       <div className="space-y-6 max-w-[1440px]">
+        {/* Greeting */}
+        <div className="flex items-end justify-between">
+          <div>
+            <h2 className="text-2xl font-extrabold text-foreground tracking-tight">{greeting}, Matt</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{dateStr} — Here's your agency at a glance.</p>
+          </div>
+          <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            Live data
+          </div>
+        </div>
+
         {/* Row 1: Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
@@ -100,20 +116,20 @@ export default function ExecutiveDashboard() {
         {/* Row 2: Revenue Trend + Pipeline */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           {/* Revenue Trend */}
-          <Card className="lg:col-span-3 bg-white shadow-sm p-5">
+          <Card className="lg:col-span-3 bg-card shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-slate-900">
+              <h3 className="text-sm font-semibold text-foreground">
                 Revenue Trend
               </h3>
-              <span className="text-xs text-slate-400">Last 6 months</span>
+              <span className="text-xs text-muted-foreground">Last 6 months</span>
             </div>
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={REVENUE_TREND}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border, #f1f5f9)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--muted-foreground, #94a3b8)" />
                 <YAxis
                   tick={{ fontSize: 11 }}
-                  stroke="#94a3b8"
+                  stroke="var(--muted-foreground, #94a3b8)"
                   tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
@@ -162,9 +178,9 @@ export default function ExecutiveDashboard() {
           </Card>
 
           {/* Pipeline Summary */}
-          <Card className="lg:col-span-2 bg-white shadow-sm p-5">
+          <Card className="lg:col-span-2 bg-card shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-slate-900">
+              <h3 className="text-sm font-semibold text-foreground">
                 Worker Pipeline
               </h3>
               <Badge variant="secondary" className="text-[10px] h-5">
@@ -173,13 +189,13 @@ export default function ExecutiveDashboard() {
             </div>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={PIPELINE_DATA} layout="vertical" barSize={18}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border, #f1f5f9)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11 }} stroke="var(--muted-foreground, #94a3b8)" />
                 <YAxis
                   type="category"
                   dataKey="stage"
                   tick={{ fontSize: 11 }}
-                  stroke="#94a3b8"
+                  stroke="var(--muted-foreground, #94a3b8)"
                   width={100}
                 />
                 <Tooltip
@@ -198,11 +214,11 @@ export default function ExecutiveDashboard() {
         {/* Row 3: Gauges */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Auth Utilization */}
-          <Card className="bg-white shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-1">
+          <Card className="bg-card shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-1">
               Authorization Utilization
             </h3>
-            <p className="text-xs text-slate-400 mb-4">Authorized vs delivered hours</p>
+            <p className="text-xs text-muted-foreground mb-4">Authorized vs delivered hours</p>
             <div className="flex items-center justify-center">
               <div className="relative">
                 <ResponsiveContainer width={160} height={100}>
@@ -227,19 +243,19 @@ export default function ExecutiveDashboard() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-x-0 bottom-1 text-center">
-                  <span className="text-2xl font-bold text-slate-900 tabular-nums">87%</span>
+                  <span className="text-2xl font-bold text-foreground tabular-nums">87%</span>
                 </div>
               </div>
             </div>
-            <p className="text-xs text-center text-slate-400 mt-2">Target: 90%+</p>
+            <p className="text-xs text-center text-muted-foreground mt-2">Target: 90%+</p>
           </Card>
 
           {/* EVV Compliance */}
-          <Card className="bg-white shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-1">
+          <Card className="bg-card shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-1">
               EVV Compliance
             </h3>
-            <p className="text-xs text-slate-400 mb-4">Auto-verified visit rate</p>
+            <p className="text-xs text-muted-foreground mb-4">Auto-verified visit rate</p>
             <div className="flex items-center justify-center">
               <div className="relative">
                 <ResponsiveContainer width={160} height={100}>
@@ -274,11 +290,11 @@ export default function ExecutiveDashboard() {
           </Card>
 
           {/* Billing Aging */}
-          <Card className="bg-white shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-1">
+          <Card className="bg-card shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-1">
               Billing Aging
             </h3>
-            <p className="text-xs text-slate-400 mb-4">Outstanding claims by age</p>
+            <p className="text-xs text-muted-foreground mb-4">Outstanding claims by age</p>
             <div className="flex items-center justify-center">
               <ResponsiveContainer width={160} height={120}>
                 <PieChart>
@@ -309,7 +325,7 @@ export default function ExecutiveDashboard() {
                     className="h-2 w-2 rounded-full"
                     style={{ background: d.color }}
                   />
-                  <span className="text-[10px] text-slate-500">{d.name}</span>
+                  <span className="text-[10px] text-muted-foreground">{d.name}</span>
                 </div>
               ))}
             </div>

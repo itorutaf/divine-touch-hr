@@ -52,7 +52,7 @@ const systemInfo: Record<TargetSystem, { name: string; description: string; icon
     name: "Generic CSV", 
     description: "Export all employee data in a comprehensive CSV format",
     icon: <FileSpreadsheet className="h-8 w-8" />,
-    color: "text-gray-500"
+    color: "text-muted-foreground"
   },
 };
 
@@ -348,7 +348,7 @@ export default function PayrollExport() {
                 <Progress value={completenessPercent} className="h-3" />
                 
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  <div className="text-center p-4 bg-slate-50 rounded-lg">
+                  <div className="text-center p-4 bg-muted rounded-lg">
                     <div className="text-2xl font-bold">{completenessStats?.total || 0}</div>
                     <div className="text-xs text-muted-foreground">Total Employees</div>
                   </div>
@@ -364,7 +364,7 @@ export default function PayrollExport() {
                     <div className="text-2xl font-bold text-purple-600">{completenessStats?.withCompensation || 0}</div>
                     <div className="text-xs text-muted-foreground">With Compensation</div>
                   </div>
-                  <div className="text-center p-4 bg-emerald-50 rounded-lg">
+                  <div className="text-center p-4 bg-emerald-500/10 rounded-lg">
                     <div className="text-2xl font-bold text-emerald-600">{completenessStats?.complete || 0}</div>
                     <div className="text-xs text-muted-foreground">Fully Complete</div>
                   </div>
@@ -589,11 +589,11 @@ export default function PayrollExport() {
               <CardContent>
                 {/* Validation Summary */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-4 bg-red-50 rounded-lg">
+                  <div className="text-center p-4 bg-red-500/10 rounded-lg">
                     <div className="text-2xl font-bold text-red-600">{errorCount}</div>
                     <div className="text-xs text-muted-foreground">Errors (Blocking)</div>
                   </div>
-                  <div className="text-center p-4 bg-amber-50 rounded-lg">
+                  <div className="text-center p-4 bg-amber-500/10 rounded-lg">
                     <div className="text-2xl font-bold text-amber-600">{warningCount}</div>
                     <div className="text-xs text-muted-foreground">Warnings</div>
                   </div>
@@ -606,7 +606,7 @@ export default function PayrollExport() {
                 </div>
                 
                 {/* Requirements Info */}
-                <div className="mb-6 p-4 bg-slate-50 rounded-lg">
+                <div className="mb-6 p-4 bg-muted rounded-lg">
                   <h4 className="font-medium mb-2">Requirements for {systemInfo[selectedSystem].name}</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>

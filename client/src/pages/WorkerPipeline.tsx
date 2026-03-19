@@ -12,9 +12,9 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 
 const SERVICE_LINE_COLORS: Record<string, string> = {
-  OLTL: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  ODP: "bg-blue-50 text-blue-700 border-blue-200",
-  Skilled: "bg-purple-50 text-purple-700 border-purple-200",
+  OLTL: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+  ODP: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  Skilled: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
 };
 
 type Worker = {
@@ -82,7 +82,7 @@ function GateBar({ progress }: { progress: number }) {
         <div
           key={i}
           className={`h-1.5 flex-1 rounded-full ${
-            i < progress ? "bg-emerald-500" : "bg-slate-200"
+            i < progress ? "bg-emerald-500" : "bg-muted"
           }`}
         />
       ))}
@@ -120,11 +120,11 @@ export default function WorkerPipeline() {
         {/* Filters */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input placeholder="Search workers..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-white" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search workers..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-card" />
           </div>
           <Select value={serviceLineFilter} onValueChange={setServiceLineFilter}>
-            <SelectTrigger className="w-[130px] bg-white"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[130px] bg-card"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Lines</SelectItem>
               <SelectItem value="OLTL">OLTL</SelectItem>
@@ -132,7 +132,7 @@ export default function WorkerPipeline() {
               <SelectItem value="Skilled">Skilled</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex items-center gap-4 ml-auto text-xs text-slate-500">
+          <div className="flex items-center gap-4 ml-auto text-xs text-muted-foreground">
             <span>{totalWorkers} workers</span>
             {stuckCount > 0 && (
               <span className="flex items-center gap-1 text-red-500 font-medium">
@@ -150,10 +150,10 @@ export default function WorkerPipeline() {
                 {/* Column Header */}
                 <div className="flex items-center justify-between px-2 py-2 mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                    <span className="text-xs font-semibold text-foreground uppercase tracking-wide">
                       {col.name}
                     </span>
-                    <Badge variant="secondary" className="h-5 text-[10px] bg-slate-100">
+                    <Badge variant="secondary" className="h-5 text-[10px] bg-muted">
                       {col.workers.length}
                     </Badge>
                   </div>
@@ -165,7 +165,7 @@ export default function WorkerPipeline() {
                     <Card
                       key={w.id}
                       onClick={() => setLocation(`/employees/${w.id}`)}
-                      className={`p-3 bg-white shadow-sm hover:shadow cursor-pointer transition-all ${
+                      className={`p-3 bg-card shadow-sm hover:shadow cursor-pointer transition-all ${
                         w.stuck
                           ? "border-l-[3px] border-l-red-400"
                           : w.expiring
@@ -175,12 +175,12 @@ export default function WorkerPipeline() {
                     >
                       {/* Name + Avatar */}
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                          <User className="h-3.5 w-3.5 text-slate-400" />
+                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0">
+                          <User className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[13px] font-medium text-slate-900 truncate">{w.name}</p>
-                          <p className="text-[10px] text-slate-400">{w.role}</p>
+                          <p className="text-[13px] font-medium text-foreground truncate">{w.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{w.role}</p>
                         </div>
                       </div>
 
@@ -189,7 +189,7 @@ export default function WorkerPipeline() {
                         <Badge variant="outline" className={`text-[9px] h-4 px-1.5 ${SERVICE_LINE_COLORS[w.serviceLine]}`}>
                           {w.serviceLine}
                         </Badge>
-                        <span className={`text-[10px] tabular-nums ${w.daysInPhase > 7 ? "text-red-500 font-semibold" : "text-slate-400"}`}>
+                        <span className={`text-[10px] tabular-nums ${w.daysInPhase > 7 ? "text-red-500 font-semibold" : "text-muted-foreground"}`}>
                           {w.daysInPhase}d
                         </span>
                       </div>
@@ -199,7 +199,7 @@ export default function WorkerPipeline() {
 
                       {/* Next Action */}
                       {w.nextAction && (
-                        <p className="text-[10px] text-slate-500 mt-2 leading-snug truncate">
+                        <p className="text-[10px] text-muted-foreground mt-2 leading-snug truncate">
                           {w.nextAction}
                         </p>
                       )}
@@ -207,7 +207,7 @@ export default function WorkerPipeline() {
                   ))}
 
                   {col.workers.length === 0 && (
-                    <div className="py-8 text-center text-xs text-slate-300">
+                    <div className="py-8 text-center text-xs text-muted-foreground">
                       No workers
                     </div>
                   )}

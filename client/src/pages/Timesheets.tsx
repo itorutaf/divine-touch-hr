@@ -132,7 +132,7 @@ export default function Timesheets() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; className: string }> = {
-      draft: { variant: "secondary", className: "bg-slate-100 text-slate-700" },
+      draft: { variant: "secondary", className: "bg-muted text-foreground" },
       submitted: { variant: "default", className: "bg-blue-100 text-blue-700" },
       pending_review: { variant: "default", className: "bg-amber-100 text-amber-700" },
       approved: { variant: "default", className: "bg-emerald-100 text-emerald-700" },
@@ -192,8 +192,8 @@ export default function Timesheets() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Total Employees</CardTitle>
-                <Users className="h-4 w-4 text-slate-400" />
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Employees</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.total}</div>
@@ -202,7 +202,7 @@ export default function Timesheets() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Submitted</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Submitted</CardTitle>
                 <FileText className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
@@ -212,7 +212,7 @@ export default function Timesheets() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Approved</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Approved</CardTitle>
                 <CheckCircle2 className="h-4 w-4 text-emerald-500" />
               </CardHeader>
               <CardContent>
@@ -222,7 +222,7 @@ export default function Timesheets() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Pending Review</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pending Review</CardTitle>
                 <Clock className="h-4 w-4 text-amber-500" />
               </CardHeader>
               <CardContent>
@@ -230,9 +230,9 @@ export default function Timesheets() {
               </CardContent>
             </Card>
 
-            <Card className={stats.missing > 0 ? "border-red-200 bg-red-50" : ""}>
+            <Card className={stats.missing > 0 ? "border-red-500/20 bg-red-500/10" : ""}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">Missing</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Missing</CardTitle>
                 <AlertTriangle className="h-4 w-4 text-red-500" />
               </CardHeader>
               <CardContent>
@@ -269,13 +269,13 @@ export default function Timesheets() {
               </CardHeader>
               <CardContent>
                 {!timesheets || timesheets.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500">
+                  <div className="text-center py-8 text-muted-foreground">
                     No timesheets submitted for this pay period yet.
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {timesheets.map((item: any) => (
-                      <div key={item.timesheet.id} className="flex items-center justify-between p-4 rounded-lg border bg-white hover:bg-slate-50">
+                      <div key={item.timesheet.id} className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted">
                         <div className="flex items-center gap-4">
                           <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
                             <FileText className="h-5 w-5 text-emerald-600" />
@@ -284,7 +284,7 @@ export default function Timesheets() {
                             <p className="font-medium">
                               {item.employee.legalFirstName} {item.employee.legalLastName}
                             </p>
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-muted-foreground">
                               {item.employee.employeeId} • {item.employee.serviceLine || "N/A"}
                               {item.timesheet.totalHours && ` • ${item.timesheet.totalHours} hours`}
                             </p>
@@ -294,12 +294,12 @@ export default function Timesheets() {
                           {getStatusBadge(item.timesheet.status)}
                           <div className="flex items-center gap-1">
                             {item.timesheet.participantSigned ? (
-                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
                                 <CheckCircle2 className="h-3 w-3 mr-1" />
                                 Signed
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                              <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
                                 <Clock className="h-3 w-3 mr-1" />
                                 Pending Sig
                               </Badge>
@@ -329,7 +329,7 @@ export default function Timesheets() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                className="text-red-600 border-red-500/20 hover:bg-red-500/10"
                                 onClick={() => {
                                   const notes = prompt("Enter reason for rejection:");
                                   if (notes) {
@@ -356,7 +356,7 @@ export default function Timesheets() {
 
           {/* Missing Timesheets Tab */}
           <TabsContent value="missing">
-            <Card className="border-red-200">
+            <Card className="border-red-500/20">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -366,7 +366,7 @@ export default function Timesheets() {
                   {isHROrAdmin && missingTimesheets && missingTimesheets.length > 0 && (
                     <Button 
                       variant="outline" 
-                      className="border-red-200 text-red-700 hover:bg-red-50"
+                      className="border-red-500/20 text-red-700 hover:bg-red-500/10"
                       onClick={() => runReminderCheckMutation.mutate()}
                       disabled={runReminderCheckMutation.isPending}
                     >
@@ -385,14 +385,14 @@ export default function Timesheets() {
                 ) : (
                   <div className="space-y-3">
                     {missingTimesheets.map((emp: any) => (
-                      <div key={emp.id} className="flex items-center justify-between p-4 rounded-lg border border-red-200 bg-red-50">
+                      <div key={emp.id} className="flex items-center justify-between p-4 rounded-lg border border-red-500/20 bg-red-500/10">
                         <div className="flex items-center gap-4">
                           <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
                             <AlertTriangle className="h-5 w-5 text-red-600" />
                           </div>
                           <div>
                             <p className="font-medium">{emp.legalFirstName} {emp.legalLastName}</p>
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-muted-foreground">
                               {emp.employeeId} • {emp.serviceLine || "N/A"} • {emp.email || "No email"}
                             </p>
                           </div>
@@ -431,8 +431,8 @@ export default function Timesheets() {
               </CardHeader>
               <CardContent>
                 {!templates || templates.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500">
-                    <FileText className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                     <p>No templates available yet.</p>
                     {isHROrAdmin && (
                       <p className="text-sm mt-2">Upload a timesheet template to get started.</p>
@@ -477,8 +477,8 @@ export default function Timesheets() {
                 </CardHeader>
                 <CardContent>
                   {!payPeriods || payPeriods.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500">
-                      <Calendar className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Calendar className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                       <p>No pay periods created yet.</p>
                       <Button 
                         className="mt-4 bg-emerald-600 hover:bg-emerald-700"
@@ -491,10 +491,10 @@ export default function Timesheets() {
                   ) : (
                     <div className="space-y-3">
                       {payPeriods.map((period) => (
-                        <div key={period.id} className="flex items-center justify-between p-4 rounded-lg border bg-white">
+                        <div key={period.id} className="flex items-center justify-between p-4 rounded-lg border bg-card">
                           <div>
                             <p className="font-medium">{period.periodName}</p>
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-muted-foreground">
                               {new Date(period.startDate).toLocaleDateString()} - {new Date(period.endDate).toLocaleDateString()}
                               {" • "}Due: {new Date(period.timesheetDueDate).toLocaleDateString()}
                             </p>

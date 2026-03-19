@@ -15,9 +15,9 @@ import {
 import { useLocation } from "wouter";
 
 const SERVICE_LINE_STYLES: Record<string, string> = {
-  OLTL: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  ODP: "bg-blue-50 text-blue-700 border-blue-200",
-  Skilled: "bg-purple-50 text-purple-700 border-purple-200",
+  OLTL: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+  ODP: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  Skilled: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
 };
 
 // Mock client data
@@ -74,19 +74,19 @@ export default function ClientDetail() {
     >
       <div className="space-y-6 max-w-[1440px]">
         {/* Header */}
-        <Card className="bg-white shadow-sm p-6">
+        <Card className="bg-card shadow-sm p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-full bg-emerald-50 flex items-center justify-center">
+              <div className="h-14 w-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
                 <User className="h-7 w-7 text-emerald-600" />
               </div>
               <div>
                 <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-slate-900">{CLIENT.firstName} {CLIENT.lastName}</h2>
+                  <h2 className="text-xl font-bold text-foreground">{CLIENT.firstName} {CLIENT.lastName}</h2>
                   <Badge variant="outline" className={SERVICE_LINE_STYLES[CLIENT.serviceLine]}>{CLIENT.serviceLine}</Badge>
-                  <Badge className="bg-emerald-50 text-emerald-700">{CLIENT.status}</Badge>
+                  <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">{CLIENT.status}</Badge>
                 </div>
-                <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{CLIENT.phone}</span>
                   <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{CLIENT.email}</span>
                   <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />Region {CLIENT.region} · {CLIENT.county}</span>
@@ -94,29 +94,29 @@ export default function ClientDetail() {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs text-slate-400">MCO</p>
-              <p className="text-sm font-medium text-slate-700">{CLIENT.mco}</p>
-              <p className="text-xs text-slate-400 mt-1">ID: {CLIENT.mcoId}</p>
+              <p className="text-xs text-muted-foreground">MCO</p>
+              <p className="text-sm font-medium text-foreground">{CLIENT.mco}</p>
+              <p className="text-xs text-muted-foreground mt-1">ID: {CLIENT.mcoId}</p>
             </div>
           </div>
         </Card>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card className="p-4 border-l-4 border-l-emerald-500 bg-white shadow-sm">
-            <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">Hours/Week</p>
-            <p className="text-2xl font-bold text-slate-900 tabular-nums">{CLIENT.hoursPerWeek}</p>
+          <Card className="p-4 border-l-4 border-l-emerald-500 bg-card shadow-sm">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Hours/Week</p>
+            <p className="text-2xl font-bold text-foreground tabular-nums">{CLIENT.hoursPerWeek}</p>
           </Card>
-          <Card className="p-4 border-l-4 border-l-blue-500 bg-white shadow-sm">
-            <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">Monthly Revenue</p>
-            <p className="text-2xl font-bold text-slate-900 tabular-nums">${PROFITABILITY.monthlyRevenue.toLocaleString()}</p>
+          <Card className="p-4 border-l-4 border-l-blue-500 bg-card shadow-sm">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Monthly Revenue</p>
+            <p className="text-2xl font-bold text-foreground tabular-nums">${PROFITABILITY.monthlyRevenue.toLocaleString()}</p>
           </Card>
-          <Card className="p-4 border-l-4 border-l-emerald-500 bg-white shadow-sm">
-            <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">Gross Margin</p>
+          <Card className="p-4 border-l-4 border-l-emerald-500 bg-card shadow-sm">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Gross Margin</p>
             <p className="text-2xl font-bold text-emerald-600 tabular-nums">{PROFITABILITY.grossMargin}%</p>
           </Card>
-          <Card className="p-4 border-l-4 border-l-amber-500 bg-white shadow-sm">
-            <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">Auth Utilization</p>
+          <Card className="p-4 border-l-4 border-l-amber-500 bg-card shadow-sm">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Auth Utilization</p>
             <p className="text-2xl font-bold text-amber-600 tabular-nums">73%</p>
           </Card>
         </div>
@@ -133,48 +133,48 @@ export default function ClientDetail() {
 
           <TabsContent value="overview" className="mt-4 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="bg-white shadow-sm">
+              <Card className="bg-card shadow-sm">
                 <CardHeader className="pb-3"><CardTitle className="text-sm">Personal Information</CardTitle></CardHeader>
                 <CardContent className="space-y-2.5 text-sm">
-                  <div className="flex justify-between"><span className="text-slate-500">Full Name</span><span className="font-medium">{CLIENT.firstName} {CLIENT.lastName}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Date of Birth</span><span>{CLIENT.dob}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Phone</span><span>{CLIENT.phone}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Email</span><span>{CLIENT.email}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Address</span><span className="text-right max-w-[200px]">{CLIENT.address}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Full Name</span><span className="font-medium">{CLIENT.firstName} {CLIENT.lastName}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Date of Birth</span><span>{CLIENT.dob}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span>{CLIENT.phone}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span>{CLIENT.email}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Address</span><span className="text-right max-w-[200px]">{CLIENT.address}</span></div>
                 </CardContent>
               </Card>
-              <Card className="bg-white shadow-sm">
+              <Card className="bg-card shadow-sm">
                 <CardHeader className="pb-3"><CardTitle className="text-sm">Service Information</CardTitle></CardHeader>
                 <CardContent className="space-y-2.5 text-sm">
-                  <div className="flex justify-between"><span className="text-slate-500">Service Line</span><Badge variant="outline" className={`text-[10px] ${SERVICE_LINE_STYLES[CLIENT.serviceLine]}`}>{CLIENT.serviceLine}</Badge></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Service Type</span><span>{CLIENT.serviceType}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Region</span><span>Region {CLIENT.region} — Southeast PA</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">MCO</span><span>{CLIENT.mco}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Start Date</span><span>{CLIENT.startDate}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Referral Source</span><span>{CLIENT.referralSource}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Service Line</span><Badge variant="outline" className={`text-[10px] ${SERVICE_LINE_STYLES[CLIENT.serviceLine]}`}>{CLIENT.serviceLine}</Badge></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Service Type</span><span>{CLIENT.serviceType}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Region</span><span>Region {CLIENT.region} — Southeast PA</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">MCO</span><span>{CLIENT.mco}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Start Date</span><span>{CLIENT.startDate}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Referral Source</span><span>{CLIENT.referralSource}</span></div>
                 </CardContent>
               </Card>
-              <Card className="bg-white shadow-sm">
+              <Card className="bg-card shadow-sm">
                 <CardHeader className="pb-3"><CardTitle className="text-sm">Service Coordinator</CardTitle></CardHeader>
                 <CardContent className="space-y-2.5 text-sm">
-                  <div className="flex justify-between"><span className="text-slate-500">Name</span><span className="font-medium">{CLIENT.serviceCoordinator}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Phone</span><span>{CLIENT.scPhone}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Email</span><span>{CLIENT.scEmail}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Name</span><span className="font-medium">{CLIENT.serviceCoordinator}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span>{CLIENT.scPhone}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span>{CLIENT.scEmail}</span></div>
                 </CardContent>
               </Card>
-              <Card className="bg-white shadow-sm">
+              <Card className="bg-card shadow-sm">
                 <CardHeader className="pb-3"><CardTitle className="text-sm">Emergency Contact</CardTitle></CardHeader>
                 <CardContent className="space-y-2.5 text-sm">
-                  <div className="flex justify-between"><span className="text-slate-500">Name</span><span className="font-medium">{CLIENT.emergencyName}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Phone</span><span>{CLIENT.emergencyPhone}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Relation</span><span>{CLIENT.emergencyRelation}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Name</span><span className="font-medium">{CLIENT.emergencyName}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span>{CLIENT.emergencyPhone}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Relation</span><span>{CLIENT.emergencyRelation}</span></div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="authorizations" className="mt-4">
-            <Card className="bg-white shadow-sm overflow-hidden">
+            <Card className="bg-card shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -198,8 +198,8 @@ export default function ClientDetail() {
                           <span className="text-xs font-semibold tabular-nums text-amber-600">{a.utilization}%</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs text-slate-500">{a.start} — {a.end}</TableCell>
-                      <TableCell><Badge className="bg-emerald-50 text-emerald-700 text-[10px]">{a.status}</Badge></TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{a.start} — {a.end}</TableCell>
+                      <TableCell><Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px]">{a.status}</Badge></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -208,7 +208,7 @@ export default function ClientDetail() {
           </TabsContent>
 
           <TabsContent value="caregivers" className="mt-4">
-            <Card className="bg-white shadow-sm overflow-hidden">
+            <Card className="bg-card shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -226,7 +226,7 @@ export default function ClientDetail() {
                       <TableCell>{cg.role}</TableCell>
                       <TableCell className="text-right tabular-nums">{cg.hoursPerWeek}</TableCell>
                       <TableCell className="text-right tabular-nums font-mono">${cg.payRate.toFixed(2)}</TableCell>
-                      <TableCell><Badge className="bg-emerald-50 text-emerald-700 text-[10px]">{cg.status}</Badge></TableCell>
+                      <TableCell><Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px]">{cg.status}</Badge></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -237,13 +237,13 @@ export default function ClientDetail() {
           <TabsContent value="profitability" className="mt-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { label: "Weekly Revenue", value: `$${PROFITABILITY.weeklyRevenue}`, color: "text-slate-900" },
+                { label: "Weekly Revenue", value: `$${PROFITABILITY.weeklyRevenue}`, color: "text-foreground" },
                 { label: "Weekly Profit", value: `$${PROFITABILITY.weeklyProfit}`, color: "text-emerald-600" },
                 { label: "LTV:CAC", value: `${PROFITABILITY.ltvCacRatio}:1`, color: "text-emerald-600" },
                 { label: "Recommendation", value: PROFITABILITY.recommendation, color: "text-emerald-600" },
               ].map((m) => (
-                <Card key={m.label} className="p-4 bg-white shadow-sm text-center">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">{m.label}</p>
+                <Card key={m.label} className="p-4 bg-card shadow-sm text-center">
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{m.label}</p>
                   <p className={`text-xl font-bold tabular-nums mt-1 ${m.color}`}>{m.value}</p>
                 </Card>
               ))}
@@ -251,14 +251,14 @@ export default function ClientDetail() {
           </TabsContent>
 
           <TabsContent value="activity" className="mt-4">
-            <Card className="bg-white shadow-sm">
-              <div className="divide-y divide-slate-100">
+            <Card className="bg-card shadow-sm">
+              <div className="divide-y divide-border">
                 {ACTIVITY.map((a) => (
                   <div key={a.id} className="px-5 py-3 flex items-center gap-3">
                     <div className="h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
-                    <p className="text-[13px] text-slate-700 flex-1">{a.action}</p>
-                    <span className="text-[11px] text-slate-400">{a.user}</span>
-                    <span className="text-[11px] text-slate-400">{a.date}</span>
+                    <p className="text-[13px] text-foreground flex-1">{a.action}</p>
+                    <span className="text-[11px] text-muted-foreground">{a.user}</span>
+                    <span className="text-[11px] text-muted-foreground">{a.date}</span>
                   </div>
                 ))}
               </div>

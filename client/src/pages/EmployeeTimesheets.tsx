@@ -155,7 +155,7 @@ export default function EmployeeTimesheets() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; className: string }> = {
-      draft: { variant: "secondary", className: "bg-slate-100 text-slate-700" },
+      draft: { variant: "secondary", className: "bg-muted text-foreground" },
       submitted: { variant: "default", className: "bg-blue-100 text-blue-700" },
       pending_review: { variant: "default", className: "bg-amber-100 text-amber-700" },
       approved: { variant: "default", className: "bg-emerald-100 text-emerald-700" },
@@ -205,7 +205,7 @@ export default function EmployeeTimesheets() {
                 </Button>
               </div>
               <div className="text-right">
-                <p className="text-sm text-slate-500">Employee ID</p>
+                <p className="text-sm text-muted-foreground">Employee ID</p>
                 <p className="font-medium">{employee.employeeId}</p>
               </div>
             </div>
@@ -220,7 +220,7 @@ export default function EmployeeTimesheets() {
           </CardHeader>
           <CardContent>
             {!templates || templates.length === 0 ? (
-              <p className="text-slate-500 text-sm">No templates available yet.</p>
+              <p className="text-muted-foreground text-sm">No templates available yet.</p>
             ) : (
               <div className="flex flex-wrap gap-3">
                 {templates.map((template) => (
@@ -244,8 +244,8 @@ export default function EmployeeTimesheets() {
           </CardHeader>
           <CardContent>
             {!timesheets || timesheets.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">
-                <FileText className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                 <p>No timesheets uploaded yet.</p>
                 <Button 
                   className="mt-4 bg-emerald-600 hover:bg-emerald-700"
@@ -260,14 +260,14 @@ export default function EmployeeTimesheets() {
                 {timesheets.map((ts: any) => {
                   const payPeriod = payPeriods?.find(p => p.id === ts.payPeriodId);
                   return (
-                    <div key={ts.id} className="flex items-center justify-between p-4 rounded-lg border bg-white hover:bg-slate-50">
+                    <div key={ts.id} className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted">
                       <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
                           <FileText className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
                           <p className="font-medium">{payPeriod?.periodName || "Unknown Period"}</p>
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             {ts.totalHours ? `${ts.totalHours} hours` : "Hours not entered"}
                             {ts.participantName && ` • ${ts.participantName}`}
                             {ts.submittedAt && ` • Submitted ${new Date(ts.submittedAt).toLocaleDateString()}`}
@@ -278,12 +278,12 @@ export default function EmployeeTimesheets() {
                         {getStatusBadge(ts.status)}
                         <div className="flex items-center gap-1">
                           {ts.participantSigned ? (
-                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
                               <CheckCircle2 className="h-3 w-3 mr-1" />
                               Participant Signed
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                            <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
                               <Clock className="h-3 w-3 mr-1" />
                               Needs Signature
                             </Badge>
@@ -364,7 +364,7 @@ export default function EmployeeTimesheets() {
                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                 onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
               />
-              <p className="text-xs text-slate-500 mt-1">Accepted: PDF, JPG, PNG, DOC, DOCX</p>
+              <p className="text-xs text-muted-foreground mt-1">Accepted: PDF, JPG, PNG, DOC, DOCX</p>
             </div>
             
             <div className="grid grid-cols-2 gap-4">

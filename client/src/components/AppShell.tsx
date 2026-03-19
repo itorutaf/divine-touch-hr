@@ -30,6 +30,8 @@ import {
   Calendar,
   GraduationCap,
   Settings,
+  Moon,
+  Sun,
   type LucideIcon,
 } from "lucide-react";
 import { type ReactNode, useState, useMemo } from "react";
@@ -37,6 +39,7 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import CommandSearch from "./CommandSearch";
 import { useAppSettings } from "@/contexts/AppSettingsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // ── Module icon mapping ──────────────────────────────────────────────
 
@@ -80,7 +83,7 @@ export default function AppShell({ children, title, actions }: AppShellProps) {
       <AppShellSidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AppShellTopBar title={title} actions={actions} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 animate-in fade-in duration-200">{children}</main>
       </div>
       <CommandSearch />
     </div>
@@ -122,7 +125,7 @@ function AppShellSidebar() {
     return (
       <button
         onClick={() => setCollapsed(false)}
-        className="fixed top-3 left-3 z-50 h-9 w-9 rounded-lg bg-white border shadow-sm flex items-center justify-center hover:bg-slate-50"
+        className="fixed top-3 left-3 z-50 h-9 w-9 rounded-lg bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted"
       >
         <PanelLeft className="h-4 w-4" />
       </button>
@@ -131,20 +134,20 @@ function AppShellSidebar() {
 
   const roleBadgeColor = (role: string) => {
     const map: Record<string, string> = {
-      admin: "bg-red-50 text-red-700",
-      hr: "bg-blue-50 text-blue-700",
-      billing: "bg-emerald-50 text-emerald-700",
-      coordinator: "bg-cyan-50 text-cyan-700",
-      supervisor: "bg-purple-50 text-purple-700",
-      compliance: "bg-amber-50 text-amber-700",
+      admin: "bg-red-500/10 text-red-700 dark:text-red-400",
+      hr: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+      billing: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+      coordinator: "bg-cyan-500/10 text-cyan-700 dark:text-cyan-400",
+      supervisor: "bg-purple-500/10 text-purple-700 dark:text-purple-400",
+      compliance: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
     };
-    return map[role] || "bg-slate-100 text-slate-600";
+    return map[role] || "bg-muted text-muted-foreground";
   };
 
   return (
     <div className="flex h-full shrink-0">
       {/* ── Icon Rail (module tabs) ──────────────── */}
-      <div className="w-[56px] bg-[#1B3A4B] flex flex-col items-center py-3 gap-1 shrink-0">
+      <div className="w-[56px] bg-[var(--sidebar-rail)] flex flex-col items-center py-3 gap-1 shrink-0">
         {/* Logo */}
         <div className="h-9 w-9 rounded-lg bg-emerald-500 flex items-center justify-center mb-3">
           <span className="text-white font-bold text-xs tracking-tight">CB</span>
@@ -260,6 +263,7 @@ function AppShellSidebar() {
 function AppShellTopBar({ title, actions }: { title?: string; actions?: ReactNode }) {
   const { user } = useAuth();
   const [location] = useLocation();
+  const { theme, setTheme } = useTheme();
   const sections = getVisibleSections(user?.role ?? "user");
 
   const activeItem = sections
@@ -292,6 +296,27 @@ function AppShellTopBar({ title, actions }: { title?: string; actions?: ReactNod
             <span className="text-[11px]">⌘</span>K
           </kbd>
         </Button>
+
+        {/* Theme Toggle */}
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Moon className="h-4 w-4 text-muted-foreground" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="text-xs">
+            {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          </TooltipContent>
+        </Tooltip>
 
         {/* Notification Bell */}
         <Button variant="ghost" size="icon" className="h-8 w-8 relative">

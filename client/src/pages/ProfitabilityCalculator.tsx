@@ -96,7 +96,7 @@ export default function ProfitabilityCalculator() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 max-w-[1440px]">
         {/* Input Panel */}
         <div className="lg:col-span-2 space-y-4">
-          <Card className="bg-white shadow-sm">
+          <Card className="bg-card shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Calculator className="h-4 w-4 text-emerald-600" />
@@ -145,7 +145,7 @@ export default function ProfitabilityCalculator() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Rate ($/hr)</Label>
-                  <Input value="$21.92" readOnly className="bg-emerald-50 font-mono tabular-nums" />
+                  <Input value="$21.92" readOnly className="bg-emerald-500/10 font-mono tabular-nums" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Hours/Week</Label>
@@ -156,7 +156,7 @@ export default function ProfitabilityCalculator() {
           </Card>
 
           {/* Workers */}
-          <Card className="bg-white shadow-sm">
+          <Card className="bg-card shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Caregiver Assignment</CardTitle>
@@ -175,17 +175,17 @@ export default function ProfitabilityCalculator() {
             </CardHeader>
             <CardContent className="space-y-3">
               {workers.map((w, i) => (
-                <div key={w.id} className="flex items-end gap-2 p-2.5 rounded-lg bg-slate-50 border">
+                <div key={w.id} className="flex items-end gap-2 p-2.5 rounded-lg bg-muted border">
                   <div className="flex-1 space-y-1">
-                    <Label className="text-[10px] text-slate-500">Hours/wk</Label>
+                    <Label className="text-[10px] text-muted-foreground">Hours/wk</Label>
                     <Input type="number" value={w.hours} className="h-8 text-sm" onChange={() => {}} />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <Label className="text-[10px] text-slate-500">Rate ($/hr)</Label>
+                    <Label className="text-[10px] text-muted-foreground">Rate ($/hr)</Label>
                     <Input type="number" value={w.rate} className="h-8 text-sm font-mono" onChange={() => {}} />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-slate-500">Family?</Label>
+                    <Label className="text-[10px] text-muted-foreground">Family?</Label>
                     <Select value={w.isFamily ? "yes" : "no"}>
                       <SelectTrigger className="h-8 w-[70px] text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -195,7 +195,7 @@ export default function ProfitabilityCalculator() {
                     </Select>
                   </div>
                   {workers.length > 1 && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" onClick={() => setWorkers(workers.filter((_, j) => j !== i))}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setWorkers(workers.filter((_, j) => j !== i))}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   )}
@@ -229,7 +229,7 @@ export default function ProfitabilityCalculator() {
               </Card>
 
               {/* P&L Card */}
-              <Card className="bg-white shadow-sm">
+              <Card className="bg-card shadow-sm">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-emerald-600" />
@@ -243,17 +243,17 @@ export default function ProfitabilityCalculator() {
                       { period: "Monthly", revenue: MOCK_RESULTS.monthlyRevenue, profit: MOCK_RESULTS.monthlyProfit },
                       { period: "Annual", revenue: MOCK_RESULTS.annualRevenue, profit: MOCK_RESULTS.annualProfit },
                     ].map((p) => (
-                      <div key={p.period} className="text-center p-3 rounded-lg bg-slate-50">
-                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">{p.period}</p>
-                        <p className="text-lg font-bold text-slate-900 tabular-nums mt-1">
+                      <div key={p.period} className="text-center p-3 rounded-lg bg-muted">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{p.period}</p>
+                        <p className="text-lg font-bold text-foreground tabular-nums mt-1">
                           ${p.revenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </p>
-                        <p className="text-xs text-slate-400">revenue</p>
+                        <p className="text-xs text-muted-foreground">revenue</p>
                         <Separator className="my-2" />
                         <p className="text-base font-bold text-emerald-600 tabular-nums">
                           ${p.profit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </p>
-                        <p className="text-xs text-slate-400">profit</p>
+                        <p className="text-xs text-muted-foreground">profit</p>
                       </div>
                     ))}
                   </div>
@@ -261,7 +261,7 @@ export default function ProfitabilityCalculator() {
               </Card>
 
               {/* Risk Indicators */}
-              <Card className="bg-white shadow-sm">
+              <Card className="bg-card shadow-sm">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">Risk Indicators</CardTitle>
                 </CardHeader>
@@ -274,7 +274,7 @@ export default function ProfitabilityCalculator() {
                       { label: "Churn Risk", value: `${(MOCK_RESULTS.churnProbability * 100).toFixed(0)}%`, color: "text-amber-600" },
                     ].map((m) => (
                       <div key={m.label} className="p-3 rounded-lg border text-center">
-                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">{m.label}</p>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{m.label}</p>
                         <p className={`text-xl font-bold tabular-nums mt-1 ${m.color}`}>{m.value}</p>
                       </div>
                     ))}

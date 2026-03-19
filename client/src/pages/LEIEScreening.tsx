@@ -18,10 +18,10 @@ const MOCK_SCREENINGS = [
 ];
 
 const STATUS_STYLES = {
-  complete: "bg-emerald-50 text-emerald-700",
-  resolved: "bg-amber-50 text-amber-700",
-  pending: "bg-blue-50 text-blue-700",
-  match_found: "bg-red-50 text-red-700",
+  complete: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  resolved: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  pending: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  match_found: "bg-red-500/10 text-red-700 dark:text-red-400",
 };
 
 export default function LEIEScreening() {
@@ -43,7 +43,7 @@ export default function LEIEScreening() {
         </div>
 
         {/* How it works */}
-        <Card className="bg-emerald-50/50 border-emerald-200 p-5">
+        <Card className="bg-emerald-500/10 border-emerald-500/20 p-5">
           <h3 className="text-sm font-semibold text-emerald-900 mb-2">Monthly OIG Compliance Screening</h3>
           <p className="text-xs text-emerald-700 leading-relaxed">
             CareBase automatically screens all active employees against the OIG LEIE (List of Excluded Individuals/Entities)
@@ -53,9 +53,9 @@ export default function LEIEScreening() {
         </Card>
 
         {/* Screening History */}
-        <Card className="bg-white shadow-sm overflow-hidden">
+        <Card className="bg-card shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-900">Screening History</h3>
+            <h3 className="text-sm font-semibold text-foreground">Screening History</h3>
             <Button variant="outline" size="sm"><Download className="h-4 w-4 mr-1.5" />Export Report</Button>
           </div>
           <Table>
@@ -71,7 +71,7 @@ export default function LEIEScreening() {
             </TableHeader>
             <TableBody>
               {MOCK_SCREENINGS.map((s) => (
-                <TableRow key={s.id} className={s.leieMatches > 0 || s.samMatches > 0 ? "bg-amber-50/20" : ""}>
+                <TableRow key={s.id} className={s.leieMatches > 0 || s.samMatches > 0 ? "bg-amber-500/10" : ""}>
                   <TableCell className="font-medium text-sm">{s.date}</TableCell>
                   <TableCell className="text-right tabular-nums">{s.workersScreened}</TableCell>
                   <TableCell className="text-right tabular-nums">

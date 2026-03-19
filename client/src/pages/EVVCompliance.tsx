@@ -45,8 +45,8 @@ export default function EVVCompliance() {
       <div className="space-y-4 max-w-[1440px]">
         {/* Hero Gauge */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-white shadow-sm p-6 flex flex-col items-center justify-center">
-            <p className="text-xs uppercase tracking-wide text-slate-500 font-medium mb-2">Agency Auto-Verification Rate</p>
+          <Card className="bg-card shadow-sm p-6 flex flex-col items-center justify-center">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium mb-2">Agency Auto-Verification Rate</p>
             <div className="relative">
               <ResponsiveContainer width={180} height={110}>
                 <PieChart>
@@ -63,8 +63,8 @@ export default function EVVCompliance() {
             <p className="text-sm font-medium text-red-500 mt-2">Below 85% PA DHS Threshold</p>
           </Card>
 
-          <Card className="md:col-span-2 bg-white shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">13-Week Compliance Trend</h3>
+          <Card className="md:col-span-2 bg-card shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-3">13-Week Compliance Trend</h3>
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={WEEKLY_TREND}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -80,9 +80,9 @@ export default function EVVCompliance() {
 
         {/* Caregiver Table + Reasons */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="lg:col-span-2 bg-white shadow-sm overflow-hidden">
+          <Card className="lg:col-span-2 bg-card shadow-sm overflow-hidden">
             <div className="px-5 py-3 border-b">
-              <h3 className="text-sm font-semibold text-slate-900">Caregiver Manual Entry Rate</h3>
+              <h3 className="text-sm font-semibold text-foreground">Caregiver Manual Entry Rate</h3>
             </div>
             <Table>
               <TableHeader>
@@ -103,7 +103,7 @@ export default function EVVCompliance() {
                     <TableCell className="text-right tabular-nums">{cg.autoVerified}</TableCell>
                     <TableCell className="text-right tabular-nums">{cg.manual}</TableCell>
                     <TableCell className="text-right">
-                      <span className={`tabular-nums font-semibold text-sm ${cg.manualPct > 15 ? "text-red-600" : "text-slate-600"}`}>
+                      <span className={`tabular-nums font-semibold text-sm ${cg.manualPct > 15 ? "text-red-600" : "text-muted-foreground"}`}>
                         {cg.manualPct.toFixed(1)}%
                       </span>
                     </TableCell>
@@ -121,8 +121,8 @@ export default function EVVCompliance() {
             </Table>
           </Card>
 
-          <Card className="bg-white shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">Manual Entry Reasons</h3>
+          <Card className="bg-card shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Manual Entry Reasons</h3>
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie data={REASON_DATA} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value">
@@ -136,9 +136,9 @@ export default function EVVCompliance() {
                 <div key={d.name} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5">
                     <div className="h-2 w-2 rounded-full" style={{ background: d.color }} />
-                    <span className="text-slate-600">{d.name}</span>
+                    <span className="text-muted-foreground">{d.name}</span>
                   </div>
-                  <span className="tabular-nums text-slate-500">{d.value}%</span>
+                  <span className="tabular-nums text-muted-foreground">{d.value}%</span>
                 </div>
               ))}
             </div>

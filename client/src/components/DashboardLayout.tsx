@@ -68,7 +68,7 @@ export default function DashboardLayout({
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+      <div className="flex items-center justify-center min-h-screen bg-muted">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
           <div className="h-16 w-16 rounded-xl bg-emerald-600 flex items-center justify-center">
             <span className="text-white font-bold text-2xl">DT</span>
@@ -183,7 +183,7 @@ function DashboardLayoutContent({
       case "compliance": return "bg-amber-100 text-amber-700";
       case "billing": return "bg-emerald-100 text-emerald-700";
       case "coordinator": return "bg-cyan-100 text-cyan-700";
-      default: return "bg-slate-100 text-slate-700";
+      default: return "bg-muted text-foreground";
     }
   };
 
@@ -298,7 +298,7 @@ function DashboardLayoutContent({
           </div>
           {actions && <div className="flex items-center gap-2">{actions}</div>}
         </div>
-        <main className="flex-1 p-6 bg-slate-50 min-h-[calc(100vh-3.5rem)]">{children}</main>
+        <main className="flex-1 p-6 bg-muted min-h-[calc(100vh-3.5rem)]">{children}</main>
       </SidebarInset>
     </>
   );

@@ -74,6 +74,7 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-rail: var(--sidebar-rail);
   --font-mono: var(--font-mono);
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
@@ -117,6 +118,7 @@
   --destructive-foreground: #ffffff;
   --sidebar-accent-foreground: #333333;
   --sidebar-primary-foreground: #ffffff;
+  --sidebar-rail: #1B3A4B;
 }
 
 .dark {
@@ -152,6 +154,7 @@
   --destructive-foreground: #ffffff;
   --sidebar-accent-foreground: #000000;
   --sidebar-primary-foreground: #000000;
+  --sidebar-rail: #0f1419;
 }
 
 /* Display density modifiers */

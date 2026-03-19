@@ -226,10 +226,10 @@ export default function DocumentUpload({ employeeId, onUploadComplete }: Documen
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             isDragging
-              ? "border-emerald-500 bg-emerald-50"
+              ? "border-emerald-500 bg-emerald-500/10"
               : selectedFile
-              ? "border-emerald-300 bg-emerald-50"
-              : "border-slate-300 hover:border-slate-400"
+              ? "border-emerald-300 bg-emerald-500/10"
+              : "border-border hover:border-slate-400"
           }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -251,7 +251,7 @@ export default function DocumentUpload({ employeeId, onUploadComplete }: Documen
               </div>
               <div className="text-left">
                 <p className="font-medium">{selectedFile.name}</p>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               </div>
@@ -268,11 +268,11 @@ export default function DocumentUpload({ employeeId, onUploadComplete }: Documen
             </div>
           ) : (
             <>
-              <Upload className="h-10 w-10 mx-auto text-slate-400 mb-4" />
-              <p className="text-slate-600 mb-2">
+              <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-2">
                 Drag and drop a file here, or click to browse
               </p>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 PDF, images, or Word documents up to 10MB
               </p>
             </>
@@ -290,7 +290,7 @@ export default function DocumentUpload({ employeeId, onUploadComplete }: Documen
               <SelectContent>
                 {Object.entries(groupedCategories).map(([group, cats]) => (
                   <div key={group}>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 bg-slate-50">
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground bg-muted">
                       {group}
                     </div>
                     {cats.map((cat) => (
@@ -312,7 +312,7 @@ export default function DocumentUpload({ employeeId, onUploadComplete }: Documen
               onChange={(e) => setExpirationDate(e.target.value)}
               className="mt-1"
             />
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               For clearances, certifications, and licenses
             </p>
           </div>
@@ -322,7 +322,7 @@ export default function DocumentUpload({ employeeId, onUploadComplete }: Documen
         {uploading && (
           <div className="space-y-2">
             <Progress value={uploadProgress} className="h-2" />
-            <p className="text-sm text-slate-500 text-center">
+            <p className="text-sm text-muted-foreground text-center">
               Uploading... {uploadProgress}%
             </p>
           </div>

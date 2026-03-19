@@ -29,10 +29,10 @@ export default function PasswordReset() {
           <div className="h-14 w-14 rounded-xl bg-emerald-600 flex items-center justify-center mb-4 shadow-lg shadow-emerald-600/20">
             <span className="text-white font-bold text-xl">CB</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">CareBase</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">CareBase</h1>
         </div>
 
-        <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
+        <Card className="border-border shadow-xl shadow-slate-200/50">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-lg">
               {sent ? "Check your email" : "Reset your password"}
@@ -46,10 +46,10 @@ export default function PasswordReset() {
           <CardContent>
             {sent ? (
               <div className="text-center space-y-4">
-                <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto">
+                <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
                   <CheckCircle2 className="h-8 w-8 text-emerald-600" />
                 </div>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   Didn't receive the email? Check your spam folder or try again.
                 </p>
                 <Button
@@ -65,7 +65,7 @@ export default function PasswordReset() {
                 <div className="space-y-2">
                   <Label htmlFor="email">Email address</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"
@@ -91,7 +91,7 @@ export default function PasswordReset() {
             <div className="mt-4 text-center">
               <button
                 onClick={() => setLocation("/login")}
-                className="text-sm text-slate-500 hover:text-slate-700 flex items-center justify-center gap-1 mx-auto"
+                className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 mx-auto"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 Back to sign in

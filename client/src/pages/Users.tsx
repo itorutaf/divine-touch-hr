@@ -31,7 +31,7 @@ const ROLE_COLORS: Record<string, string> = {
   hr: "bg-blue-100 text-blue-700",
   supervisor: "bg-purple-100 text-purple-700",
   compliance: "bg-amber-100 text-amber-700",
-  user: "bg-slate-100 text-slate-700",
+  user: "bg-muted text-foreground",
 };
 
 const ROLE_DESCRIPTIONS: Record<string, string> = {
@@ -106,7 +106,7 @@ export default function Users() {
               {Object.entries(ROLE_DESCRIPTIONS).map(([role, description]) => (
                 <div key={role} className="p-3 rounded-lg border">
                   <Badge className={ROLE_COLORS[role]}>{role.toUpperCase()}</Badge>
-                  <p className="text-sm text-slate-500 mt-2">{description}</p>
+                  <p className="text-sm text-muted-foreground mt-2">{description}</p>
                 </div>
               ))}
             </div>
@@ -125,8 +125,8 @@ export default function Users() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
               </div>
             ) : !users || users.length === 0 ? (
-              <div className="h-64 flex flex-col items-center justify-center text-slate-500">
-                <UsersIcon className="h-12 w-12 mb-4 text-slate-300" />
+              <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
+                <UsersIcon className="h-12 w-12 mb-4 text-muted-foreground" />
                 <p>No users found</p>
               </div>
             ) : (
@@ -150,7 +150,7 @@ export default function Users() {
                           {(u.role || "user").toUpperCase()}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-slate-500">
+                      <TableCell className="text-muted-foreground">
                         {u.lastSignedIn ? new Date(u.lastSignedIn).toLocaleDateString() : "-"}
                       </TableCell>
                       <TableCell>

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 const PHASES = [
-  { key: "Intake", label: "Intake", color: "bg-slate-500" },
+  { key: "Intake", label: "Intake", color: "bg-muted0" },
   { key: "Screening", label: "Screening", color: "bg-amber-500" },
   { key: "Documentation", label: "Documentation", color: "bg-blue-500" },
   { key: "Verification", label: "Verification", color: "bg-purple-500" },
@@ -71,45 +71,45 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Total Employees</CardTitle>
-              <Users className="h-4 w-4 text-slate-400" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Employees</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalEmployees}</div>
-              <p className="text-xs text-slate-500">In onboarding pipeline</p>
+              <p className="text-xs text-muted-foreground">In onboarding pipeline</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Active Employees</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active Employees</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-emerald-600">{activeCount}</div>
-              <p className="text-xs text-slate-500">Fully onboarded</p>
+              <p className="text-xs text-muted-foreground">Fully onboarded</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Pending Approvals</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pending Approvals</CardTitle>
               <ClipboardCheck className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-amber-600">{totalPending}</div>
-              <p className="text-xs text-slate-500">Awaiting action</p>
+              <p className="text-xs text-muted-foreground">Awaiting action</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Exceptions</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Exceptions</CardTitle>
               <AlertTriangle className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">{totalExceptions}</div>
-              <p className="text-xs text-slate-500">Need attention</p>
+              <p className="text-xs text-muted-foreground">Need attention</p>
             </CardContent>
           </Card>
         </div>
@@ -193,16 +193,16 @@ export default function Dashboard() {
             {/* Expiring Documents List */}
             {expiringDocs && (expiringDocs.expired > 0 || expiringDocs.expiring7Days > 0) && (
               <div className="mt-4 border-t pt-4">
-                <h4 className="text-sm font-medium text-slate-700 mb-3">Documents Requiring Immediate Attention</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">Documents Requiring Immediate Attention</h4>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {/* Expired Documents */}
                   {expiringDocs.documents?.expired?.map((doc: any) => (
-                    <div key={doc.id} className="flex items-center justify-between p-2 rounded-lg bg-red-50 border border-red-200">
+                    <div key={doc.id} className="flex items-center justify-between p-2 rounded-lg bg-red-500/10 border border-red-500/20">
                       <div className="flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
                         <div>
-                          <p className="text-sm font-medium text-slate-800">{doc.documentName}</p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-sm font-medium text-foreground">{doc.documentName}</p>
+                          <p className="text-xs text-muted-foreground">
                             {doc.employeeName} • {doc.category}
                           </p>
                         </div>
@@ -219,8 +219,8 @@ export default function Dashboard() {
                       <div className="flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-orange-500"></div>
                         <div>
-                          <p className="text-sm font-medium text-slate-800">{doc.documentName}</p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-sm font-medium text-foreground">{doc.documentName}</p>
+                          <p className="text-xs text-muted-foreground">
                             {doc.employeeName} • {doc.category}
                           </p>
                         </div>
@@ -255,14 +255,14 @@ export default function Dashboard() {
                     <div key={phase.key} className="flex items-center">
                       <button
                         onClick={() => setLocation(`/employees?phase=${encodeURIComponent(phase.key)}`)}
-                        className="flex flex-col items-center p-4 rounded-lg border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors min-w-[120px]"
+                        className="flex flex-col items-center p-4 rounded-lg border border-border hover:border-emerald-300 hover:bg-emerald-500/10 transition-colors min-w-[120px]"
                       >
                         <div className={`h-3 w-3 rounded-full ${phase.color} mb-2`}></div>
                         <span className="text-2xl font-bold">{count}</span>
-                        <span className="text-xs text-slate-500 text-center">{phase.label}</span>
+                        <span className="text-xs text-muted-foreground text-center">{phase.label}</span>
                       </button>
                       {index < PHASES.length - 1 && (
-                        <ArrowRight className="h-4 w-4 text-slate-300 mx-1 flex-shrink-0" />
+                        <ArrowRight className="h-4 w-4 text-muted-foreground mx-1 flex-shrink-0" />
                       )}
                     </div>
                   );
@@ -292,21 +292,21 @@ export default function Dashboard() {
               ) : pendingApprovals && pendingApprovals.length > 0 ? (
                 <div className="space-y-3">
                   {pendingApprovals.slice(0, 5).map((approval) => (
-                    <div key={approval.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div key={approval.id} className="flex items-center justify-between p-3 rounded-lg bg-muted">
                       <div>
                         <p className="font-medium text-sm">
                           {approval.gateType.replace(/_/g, " ")}
                         </p>
-                        <p className="text-xs text-slate-500">Employee ID: {approval.employeeId}</p>
+                        <p className="text-xs text-muted-foreground">Employee ID: {approval.employeeId}</p>
                       </div>
-                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                      <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
                         Pending
                       </Badge>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="h-32 flex items-center justify-center text-slate-500">
+                <div className="h-32 flex items-center justify-center text-muted-foreground">
                   No pending approvals
                 </div>
               )}
@@ -331,23 +331,23 @@ export default function Dashboard() {
               ) : openExceptions && openExceptions.length > 0 ? (
                 <div className="space-y-3">
                   {openExceptions.slice(0, 5).map((exception) => (
-                    <div key={exception.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                    <div key={exception.id} className="flex items-center justify-between p-3 rounded-lg bg-muted">
                       <div>
                         <p className="font-medium text-sm truncate max-w-[200px]">
                           {exception.issue}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           Owner: {exception.owner || "Unassigned"}
                         </p>
                       </div>
-                      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                      <Badge variant="outline" className="bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20">
                         Open
                       </Badge>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="h-32 flex items-center justify-center text-slate-500">
+                <div className="h-32 flex items-center justify-center text-muted-foreground">
                   No open exceptions
                 </div>
               )}

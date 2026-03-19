@@ -188,14 +188,14 @@ export default function Landing() {
       <section id="platform" className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-emerald-50 rounded-full px-4 py-1.5 mb-4">
+            <div className="inline-flex items-center gap-2 bg-emerald-500/10 rounded-full px-4 py-1.5 mb-4">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               <span className="text-emerald-700 text-xs font-semibold uppercase tracking-wide">Our Platform</span>
             </div>
-            <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-4">
+            <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mb-4">
               Everything Your Agency <span className="text-emerald-600">Needs</span>
             </h2>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto">Six operational domains, one unified platform. Built specifically for Pennsylvania OLTL, ODP, and Skilled agencies.</p>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Six operational domains, one unified platform. Built specifically for Pennsylvania OLTL, ODP, and Skilled agencies.</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -296,13 +296,13 @@ export default function Landing() {
       {/* ═══════════════════════════════════════════════════════════════
           HOW IT WORKS — 3 Steps
       ═══════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-6 bg-slate-50">
+      <section className="py-24 px-6 bg-muted">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 mb-4">
+            <h2 className="text-4xl font-extrabold tracking-tight text-foreground mb-4">
               Get Started in <span className="text-emerald-600">3 Steps</span>
             </h2>
-            <p className="text-slate-500 text-lg">From demo to daily operations in under two weeks.</p>
+            <p className="text-muted-foreground text-lg">From demo to daily operations in under two weeks.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -334,11 +334,11 @@ export default function Landing() {
       <section className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-emerald-50 rounded-full px-4 py-1.5 mb-4">
+            <div className="inline-flex items-center gap-2 bg-emerald-500/10 rounded-full px-4 py-1.5 mb-4">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               <span className="text-emerald-700 text-xs font-semibold uppercase tracking-wide">Our Team</span>
             </div>
-            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">
+            <h2 className="text-4xl font-extrabold tracking-tight text-foreground">
               Built by <span className="text-emerald-600">Operators</span>
             </h2>
           </div>
@@ -351,7 +351,7 @@ export default function Landing() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                   {/* Experience badge */}
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                    <span className="text-[10px] font-bold text-slate-700">{member.exp}</span>
+                    <span className="text-[10px] font-bold text-foreground">{member.exp}</span>
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 p-6">
                     <h3 className="text-white font-bold text-lg">{member.name}</h3>
@@ -367,14 +367,14 @@ export default function Landing() {
       {/* ═══════════════════════════════════════════════════════════════
           TESTIMONIALS
       ═══════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-6 bg-slate-50">
+      <section className="py-24 px-6 bg-muted">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-amber-50 rounded-full px-4 py-1.5 mb-4">
+            <div className="inline-flex items-center gap-2 bg-amber-500/10 rounded-full px-4 py-1.5 mb-4">
               <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
               <span className="text-amber-700 text-xs font-semibold uppercase tracking-wide">Client Reviews</span>
             </div>
-            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">
+            <h2 className="text-4xl font-extrabold tracking-tight text-foreground">
               What Agencies Say <span className="text-emerald-600">About Us</span>
             </h2>
           </div>
@@ -391,14 +391,14 @@ export default function Landing() {
                       <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <p className="text-slate-700 text-base leading-relaxed mb-6 italic">"{t.quote}"</p>
+                  <p className="text-foreground text-base leading-relaxed mb-6 italic">"{t.quote}"</p>
                   <div className="flex items-center gap-4">
                     <img src={t.image} alt={t.name} className="h-12 w-12 rounded-full object-cover" />
                     <div>
-                      <p className="text-slate-900 font-bold text-sm">{t.name}</p>
-                      <p className="text-slate-500 text-xs">{t.role}</p>
+                      <p className="text-foreground font-bold text-sm">{t.name}</p>
+                      <p className="text-muted-foreground text-xs">{t.role}</p>
                     </div>
-                    <div className="ml-auto text-xs text-slate-400 flex items-center gap-1">
+                    <div className="ml-auto text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3" /> 2 days ago
                     </div>
                   </div>
@@ -415,17 +415,17 @@ export default function Landing() {
       <section id="pricing" className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 mb-4">
+            <h2 className="text-4xl font-extrabold tracking-tight text-foreground mb-4">
               Simple, <span className="text-emerald-600">Transparent</span> Pricing
             </h2>
-            <p className="text-slate-500 text-lg">No hidden fees. Cancel anytime. Start with a free demo.</p>
+            <p className="text-muted-foreground text-lg">No hidden fees. Cancel anytime. Start with a free demo.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {PRICING.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative rounded-2xl overflow-hidden ${plan.popular ? "ring-2 ring-emerald-500 shadow-xl shadow-emerald-500/10" : "border border-slate-200"}`}
+                className={`relative rounded-2xl overflow-hidden ${plan.popular ? "ring-2 ring-emerald-500 shadow-xl shadow-emerald-500/10" : "border border-border"}`}
               >
                 {plan.popular && (
                   <div className="bg-emerald-500 text-white text-center py-1.5 text-xs font-bold uppercase tracking-wide">
@@ -433,19 +433,19 @@ export default function Landing() {
                   </div>
                 )}
                 <div className="p-8 bg-white">
-                  <h3 className="text-xl font-bold text-slate-900 mb-1">{plan.name}</h3>
-                  <p className="text-slate-500 text-sm mb-6">{plan.description}</p>
+                  <h3 className="text-xl font-bold text-foreground mb-1">{plan.name}</h3>
+                  <p className="text-muted-foreground text-sm mb-6">{plan.description}</p>
                   <div className="mb-6">
-                    <span className="text-5xl font-extrabold text-slate-900 tracking-tight">${plan.price}</span>
-                    <span className="text-slate-400 text-sm">/month</span>
+                    <span className="text-5xl font-extrabold text-foreground tracking-tight">${plan.price}</span>
+                    <span className="text-muted-foreground text-sm">/month</span>
                   </div>
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((f) => (
                       <li key={f} className="flex items-center gap-2.5 text-sm">
-                        <div className="h-5 w-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                        <div className="h-5 w-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
                           <Check className="h-3 w-3 text-emerald-600" />
                         </div>
-                        <span className="text-slate-600">{f}</span>
+                        <span className="text-muted-foreground">{f}</span>
                       </li>
                     ))}
                   </ul>

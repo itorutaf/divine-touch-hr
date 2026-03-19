@@ -161,7 +161,7 @@ export default function EmployeeDetail() {
     return (
       <AppShell title="Employee Not Found">
         <div className="h-64 flex flex-col items-center justify-center">
-          <p className="text-slate-500 mb-4">Employee not found</p>
+          <p className="text-muted-foreground mb-4">Employee not found</p>
           <Button onClick={() => setLocation("/employees")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Employees
@@ -214,10 +214,10 @@ export default function EmployeeDetail() {
                   <h2 className="text-xl font-bold">
                     {employee.legalFirstName} {employee.legalLastName}
                     {employee.preferredName && (
-                      <span className="text-slate-500 font-normal ml-2">({employee.preferredName})</span>
+                      <span className="text-muted-foreground font-normal ml-2">({employee.preferredName})</span>
                     )}
                   </h2>
-                  <p className="text-slate-500 font-mono text-sm">{employee.employeeId}</p>
+                  <p className="text-muted-foreground font-mono text-sm">{employee.employeeId}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge variant="outline">{employee.serviceLine || "No Service Line"}</Badge>
                     <Badge variant="outline">{employee.roleAppliedFor || "No Role"}</Badge>
@@ -226,18 +226,18 @@ export default function EmployeeDetail() {
               </div>
               <div className="flex flex-col items-end gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-500">Phase:</span>
+                  <span className="text-sm text-muted-foreground">Phase:</span>
                   <Badge className="bg-blue-100 text-blue-700">{employee.currentPhase}</Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-500">Status:</span>
+                  <span className="text-sm text-muted-foreground">Status:</span>
                   <Badge className={employee.status === "Complete" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
                     {employee.status}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-500">Progress:</span>
-                  <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <span className="text-sm text-muted-foreground">Progress:</span>
+                  <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-emerald-500 rounded-full"
                       style={{ width: `${employee.completionPercent || 0}%` }}
@@ -298,21 +298,21 @@ export default function EmployeeDetail() {
                         <div className="flex items-center gap-4">
                           <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
                             status === "Approved" ? "bg-emerald-100" : 
-                            status === "Rejected" ? "bg-red-100" : "bg-slate-100"
+                            status === "Rejected" ? "bg-red-100" : "bg-muted"
                           }`}>
                             {status === "Approved" ? (
                               <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                             ) : status === "Rejected" ? (
                               <XCircle className="h-5 w-5 text-red-600" />
                             ) : (
-                              <Clock className="h-5 w-5 text-slate-400" />
+                              <Clock className="h-5 w-5 text-muted-foreground" />
                             )}
                           </div>
                           <div>
                             <p className="font-medium">{label}</p>
-                            <p className="text-sm text-slate-500">{GATE_DESCRIPTIONS[gateType]}</p>
+                            <p className="text-sm text-muted-foreground">{GATE_DESCRIPTIONS[gateType]}</p>
                             {gate?.approvedByName && (
-                              <p className="text-xs text-slate-400 mt-1">
+                              <p className="text-xs text-muted-foreground mt-1">
                                 {status} by {gate.approvedByName} on {new Date(gate.approvedAt!).toLocaleDateString()}
                               </p>
                             )}
@@ -391,36 +391,36 @@ export default function EmployeeDetail() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-slate-500">First Name</Label>
+                      <Label className="text-muted-foreground">First Name</Label>
                       <p className="font-medium">{employee.legalFirstName}</p>
                     </div>
                     <div>
-                      <Label className="text-slate-500">Last Name</Label>
+                      <Label className="text-muted-foreground">Last Name</Label>
                       <p className="font-medium">{employee.legalLastName}</p>
                     </div>
                     <div>
-                      <Label className="text-slate-500">Date of Birth</Label>
+                      <Label className="text-muted-foreground">Date of Birth</Label>
                       <p className="font-medium">{employee.dob ? new Date(employee.dob).toLocaleDateString() : "-"}</p>
                     </div>
                     <div>
-                      <Label className="text-slate-500">SSN (Last 4)</Label>
+                      <Label className="text-muted-foreground">SSN (Last 4)</Label>
                       <p className="font-medium font-mono">***-**-{employee.ssnLast4 || "****"}</p>
                     </div>
                   </div>
                   <Separator />
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-slate-500">Phone</Label>
+                      <Label className="text-muted-foreground">Phone</Label>
                       <p className="font-medium">{employee.phone || "-"}</p>
                     </div>
                     <div>
-                      <Label className="text-slate-500">Email</Label>
+                      <Label className="text-muted-foreground">Email</Label>
                       <p className="font-medium">{employee.email || "-"}</p>
                     </div>
                   </div>
                   <Separator />
                   <div>
-                    <Label className="text-slate-500">Address</Label>
+                    <Label className="text-muted-foreground">Address</Label>
                     <p className="font-medium">
                       {employee.addressLine1 || "-"}<br />
                       {employee.city && `${employee.city}, `}{employee.state} {employee.zip}
@@ -436,33 +436,33 @@ export default function EmployeeDetail() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-slate-500">Role Applied For</Label>
+                      <Label className="text-muted-foreground">Role Applied For</Label>
                       <p className="font-medium">{employee.roleAppliedFor || "-"}</p>
                     </div>
                     <div>
-                      <Label className="text-slate-500">Service Line</Label>
+                      <Label className="text-muted-foreground">Service Line</Label>
                       <p className="font-medium">{employee.serviceLine || "-"}</p>
                     </div>
                     <div>
-                      <Label className="text-slate-500">Hiring Source</Label>
+                      <Label className="text-muted-foreground">Hiring Source</Label>
                       <p className="font-medium">{employee.hiringSource || "-"}</p>
                     </div>
                     <div>
-                      <Label className="text-slate-500">Pay Rate</Label>
+                      <Label className="text-muted-foreground">Pay Rate</Label>
                       <p className="font-medium">{employee.payRate ? `$${employee.payRate}` : "-"} {employee.payType}</p>
                     </div>
                     <div>
-                      <Label className="text-slate-500">Proposed Start Date</Label>
+                      <Label className="text-muted-foreground">Proposed Start Date</Label>
                       <p className="font-medium">{employee.proposedStartDate ? new Date(employee.proposedStartDate).toLocaleDateString() : "-"}</p>
                     </div>
                     <div>
-                      <Label className="text-slate-500">Active Date</Label>
+                      <Label className="text-muted-foreground">Active Date</Label>
                       <p className="font-medium">{employee.activeDate ? new Date(employee.activeDate).toLocaleDateString() : "-"}</p>
                     </div>
                   </div>
                   <Separator />
                   <div>
-                    <Label className="text-slate-500">HR Notes</Label>
+                    <Label className="text-muted-foreground">HR Notes</Label>
                     <p className="text-sm mt-1">{employee.hrNotes || "No notes"}</p>
                   </div>
                 </CardContent>
@@ -499,16 +499,16 @@ export default function EmployeeDetail() {
                       <Badge className={
                         employee.dsPacket1Status === "Completed" ? "bg-emerald-100 text-emerald-700" :
                         employee.dsPacket1Status === "Sent" ? "bg-blue-100 text-blue-700" :
-                        "bg-slate-100 text-slate-700"
+                        "bg-muted text-foreground"
                       }>
                         {employee.dsPacket1Status || "Not Sent"}
                       </Badge>
                     </div>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-muted-foreground">
                       Envelope ID: {employee.dsPacket1EnvelopeId || "-"}
                     </p>
                     {employee.dsPacket1CompletedDate && (
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         Completed: {new Date(employee.dsPacket1CompletedDate).toLocaleDateString()}
                       </p>
                     )}
@@ -519,16 +519,16 @@ export default function EmployeeDetail() {
                       <Badge className={
                         employee.dsPacket2Status === "Completed" ? "bg-emerald-100 text-emerald-700" :
                         employee.dsPacket2Status === "Sent" ? "bg-blue-100 text-blue-700" :
-                        "bg-slate-100 text-slate-700"
+                        "bg-muted text-foreground"
                       }>
                         {employee.dsPacket2Status || "Not Sent"}
                       </Badge>
                     </div>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-muted-foreground">
                       Envelope ID: {employee.dsPacket2EnvelopeId || "-"}
                     </p>
                     {employee.dsPacket2CompletedDate && (
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         Completed: {new Date(employee.dsPacket2CompletedDate).toLocaleDateString()}
                       </p>
                     )}
@@ -561,7 +561,7 @@ export default function EmployeeDetail() {
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         ) : (
-                          <span className="text-slate-400 text-sm">Not set</span>
+                          <span className="text-muted-foreground text-sm">Not set</span>
                         )}
                       </div>
                     ))}
@@ -589,12 +589,12 @@ export default function EmployeeDetail() {
                         {clearance.received ? (
                           <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                         ) : (
-                          <Clock className="h-5 w-5 text-slate-400" />
+                          <Clock className="h-5 w-5 text-muted-foreground" />
                         )}
                         <div>
                           <p className="font-medium">{clearance.label}</p>
                           {clearance.date && (
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-muted-foreground">
                               Received: {new Date(clearance.date).toLocaleDateString()}
                             </p>
                           )}
@@ -618,12 +618,12 @@ export default function EmployeeDetail() {
                       {employee.i9Complete ? (
                         <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                       ) : (
-                        <Clock className="h-5 w-5 text-slate-400" />
+                        <Clock className="h-5 w-5 text-muted-foreground" />
                       )}
                       <div>
                         <p className="font-medium">I-9 Verification</p>
                         {employee.i9VerifiedBy && (
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             Verified by {employee.i9VerifiedBy}
                           </p>
                         )}
@@ -639,12 +639,12 @@ export default function EmployeeDetail() {
                       {employee.physicalTbComplete ? (
                         <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                       ) : (
-                        <Clock className="h-5 w-5 text-slate-400" />
+                        <Clock className="h-5 w-5 text-muted-foreground" />
                       )}
                       <div>
                         <p className="font-medium">Physical / TB Test</p>
                         {employee.physicalTbDate && (
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             Completed: {new Date(employee.physicalTbDate).toLocaleDateString()}
                           </p>
                         )}
@@ -660,12 +660,12 @@ export default function EmployeeDetail() {
                       {employee.cprComplete ? (
                         <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                       ) : (
-                        <Clock className="h-5 w-5 text-slate-400" />
+                        <Clock className="h-5 w-5 text-muted-foreground" />
                       )}
                       <div>
                         <p className="font-medium">CPR Certification</p>
                         {employee.cprExpDate && (
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             Expires: {new Date(employee.cprExpDate).toLocaleDateString()}
                           </p>
                         )}
@@ -682,12 +682,12 @@ export default function EmployeeDetail() {
                         {employee.licenseVerified ? (
                           <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                         ) : (
-                          <Clock className="h-5 w-5 text-slate-400" />
+                          <Clock className="h-5 w-5 text-muted-foreground" />
                         )}
                         <div>
                           <p className="font-medium">Professional License</p>
                           {employee.licenseNumber && (
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-muted-foreground">
                               #{employee.licenseNumber} - Exp: {employee.licenseExpDate ? new Date(employee.licenseExpDate).toLocaleDateString() : "N/A"}
                             </p>
                           )}
@@ -715,17 +715,17 @@ export default function EmployeeDetail() {
                   <div className="space-y-4">
                     {auditLogs.map((log) => (
                       <div key={log.id} className="flex items-start gap-4 p-3 rounded-lg border">
-                        <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                          <History className="h-4 w-4 text-slate-500" />
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                          <History className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <p className="font-medium">{log.action}</p>
-                            <span className="text-sm text-slate-500">
+                            <span className="text-sm text-muted-foreground">
                               {new Date(log.createdAt).toLocaleString()}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             By {log.userName || "System"}
                           </p>
                         </div>
@@ -733,7 +733,7 @@ export default function EmployeeDetail() {
                     ))}
                   </div>
                 ) : (
-                  <div className="h-32 flex items-center justify-center text-slate-500">
+                  <div className="h-32 flex items-center justify-center text-muted-foreground">
                     No audit history available
                   </div>
                 )}

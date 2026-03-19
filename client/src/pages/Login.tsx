@@ -65,15 +65,15 @@ export default function Login() {
           <div className="h-14 w-14 rounded-xl bg-emerald-600 flex items-center justify-center mb-4 shadow-lg shadow-emerald-600/20">
             <span className="text-white font-bold text-xl">CB</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             CareBase
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Home Care Operations Platform
           </p>
         </div>
 
-        <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
+        <Card className="border-border shadow-xl shadow-slate-200/50">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-lg">
               {mode === "login" ? "Sign in to your account" : "Create your account"}
@@ -132,7 +132,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -141,7 +141,7 @@ export default function Login() {
               </div>
 
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">
+                <p className="text-sm text-red-600 bg-red-500/10 rounded-md px-3 py-2">
                   {error}
                 </p>
               )}
@@ -173,7 +173,7 @@ export default function Login() {
           </CardContent>
         </Card>
 
-        <p className="text-xs text-center text-slate-400 mt-6">
+        <p className="text-xs text-center text-muted-foreground mt-6">
           Faturoti Supply LLC / Divine Touch Home Care Services
         </p>
       </div>

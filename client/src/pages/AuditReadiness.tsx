@@ -36,7 +36,7 @@ function CheckIcon({ ok }: { ok: boolean }) {
 }
 
 function ScoreBadge({ score }: { score: number }) {
-  const color = score === 100 ? "bg-emerald-50 text-emerald-700" : score >= 75 ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700";
+  const color = score === 100 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : score >= 75 ? "bg-amber-500/10 text-amber-700 dark:text-amber-400" : "bg-red-500/10 text-red-700 dark:text-red-400";
   return <Badge className={`text-[10px] tabular-nums ${color}`}>{score}%</Badge>;
 }
 
@@ -58,28 +58,28 @@ export default function AuditReadiness() {
       <div className="space-y-4 max-w-[1440px]">
         {/* Overall Score */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className={`p-5 border-l-4 bg-white shadow-sm ${overallScore >= 90 ? "border-l-emerald-500" : overallScore >= 70 ? "border-l-amber-500" : "border-l-red-500"}`}>
-            <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Overall Readiness</p>
+          <Card className={`p-5 border-l-4 bg-card shadow-sm ${overallScore >= 90 ? "border-l-emerald-500" : overallScore >= 70 ? "border-l-amber-500" : "border-l-red-500"}`}>
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Overall Readiness</p>
             <div className="flex items-end gap-2 mt-1">
-              <span className="text-3xl font-bold tabular-nums text-slate-900">{overallScore}%</span>
+              <span className="text-3xl font-bold tabular-nums text-foreground">{overallScore}%</span>
               <ShieldCheck className={`h-6 w-6 mb-1 ${overallScore >= 90 ? "text-emerald-500" : "text-amber-500"}`} />
             </div>
             <Progress value={overallScore} className="h-2 mt-3" />
           </Card>
-          <Card className="p-5 border-l-4 border-l-blue-500 bg-white shadow-sm">
-            <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Worker Compliance</p>
-            <p className="text-3xl font-bold tabular-nums text-slate-900 mt-1">{avgWorkerScore}%</p>
-            <p className="text-xs text-slate-400 mt-1">{fullyCompliant}/{WORKER_AUDIT.length} fully compliant</p>
+          <Card className="p-5 border-l-4 border-l-blue-500 bg-card shadow-sm">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Worker Compliance</p>
+            <p className="text-3xl font-bold tabular-nums text-foreground mt-1">{avgWorkerScore}%</p>
+            <p className="text-xs text-muted-foreground mt-1">{fullyCompliant}/{WORKER_AUDIT.length} fully compliant</p>
           </Card>
-          <Card className="p-5 border-l-4 border-l-emerald-500 bg-white shadow-sm">
-            <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Client Compliance</p>
-            <p className="text-3xl font-bold tabular-nums text-slate-900 mt-1">{avgClientScore}%</p>
-            <p className="text-xs text-slate-400 mt-1">{CLIENT_AUDIT.filter((c) => c.score === 100).length}/{CLIENT_AUDIT.length} fully compliant</p>
+          <Card className="p-5 border-l-4 border-l-emerald-500 bg-card shadow-sm">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Client Compliance</p>
+            <p className="text-3xl font-bold tabular-nums text-foreground mt-1">{avgClientScore}%</p>
+            <p className="text-xs text-muted-foreground mt-1">{CLIENT_AUDIT.filter((c) => c.score === 100).length}/{CLIENT_AUDIT.length} fully compliant</p>
           </Card>
-          <Card className="p-5 border-l-4 border-l-red-500 bg-white shadow-sm">
-            <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Action Items</p>
+          <Card className="p-5 border-l-4 border-l-red-500 bg-card shadow-sm">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Action Items</p>
             <p className="text-3xl font-bold text-red-600 tabular-nums mt-1">{WORKER_AUDIT.filter((w) => w.score < 100).length + CLIENT_AUDIT.filter((c) => c.score < 100).length}</p>
-            <p className="text-xs text-slate-400 mt-1">records need attention</p>
+            <p className="text-xs text-muted-foreground mt-1">records need attention</p>
           </Card>
         </div>
 
@@ -90,7 +90,7 @@ export default function AuditReadiness() {
           </TabsList>
 
           <TabsContent value="workers" className="mt-4">
-            <Card className="bg-white shadow-sm overflow-hidden">
+            <Card className="bg-card shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -106,7 +106,7 @@ export default function AuditReadiness() {
                 </TableHeader>
                 <TableBody>
                   {WORKER_AUDIT.sort((a, b) => a.score - b.score).map((w) => (
-                    <TableRow key={w.id} className={w.score < 50 ? "bg-red-50/30" : w.score < 100 ? "bg-amber-50/10" : ""}>
+                    <TableRow key={w.id} className={w.score < 50 ? "bg-red-500/10" : w.score < 100 ? "bg-amber-500/5" : ""}>
                       <TableCell className="font-medium text-sm">{w.name}</TableCell>
                       <TableCell><CheckIcon ok={w.clearances} /></TableCell>
                       <TableCell><CheckIcon ok={w.i9} /></TableCell>
@@ -123,7 +123,7 @@ export default function AuditReadiness() {
           </TabsContent>
 
           <TabsContent value="clients" className="mt-4">
-            <Card className="bg-white shadow-sm overflow-hidden">
+            <Card className="bg-card shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -137,7 +137,7 @@ export default function AuditReadiness() {
                 </TableHeader>
                 <TableBody>
                   {CLIENT_AUDIT.sort((a, b) => a.score - b.score).map((c) => (
-                    <TableRow key={c.id} className={c.score < 100 ? "bg-amber-50/10" : ""}>
+                    <TableRow key={c.id} className={c.score < 100 ? "bg-amber-500/5" : ""}>
                       <TableCell className="font-medium text-sm">{c.name}</TableCell>
                       <TableCell><CheckIcon ok={c.servicePlan} /></TableCell>
                       <TableCell><CheckIcon ok={c.authActive} /></TableCell>

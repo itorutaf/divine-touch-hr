@@ -75,9 +75,9 @@ const ACTIVITY_LOG = [
 ];
 
 const SERVICE_LINE_COLORS: Record<string, string> = {
-  OLTL: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  ODP: "bg-blue-50 text-blue-700 border-blue-200",
-  Skilled: "bg-purple-50 text-purple-700 border-purple-200",
+  OLTL: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+  ODP: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  Skilled: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
 };
 
 const ACTION_BUTTONS: Record<string, { label: string; variant: "default" | "outline" }> = {
@@ -129,9 +129,9 @@ export default function HRDashboard() {
         {/* Row 2: Mini-Kanban + Action Items */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           {/* Mini Kanban (60%) */}
-          <Card className="lg:col-span-3 bg-white shadow-sm overflow-hidden">
+          <Card className="lg:col-span-3 bg-card shadow-sm overflow-hidden">
             <div className="px-5 py-3.5 border-b flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-900">
+              <h3 className="text-sm font-semibold text-foreground">
                 Worker Pipeline
               </h3>
               <Button variant="ghost" size="sm" className="h-7 text-xs text-emerald-600">
@@ -146,11 +146,11 @@ export default function HRDashboard() {
                     key={col.name}
                     className="w-[200px] shrink-0 border-r last:border-r-0"
                   >
-                    <div className="px-3 py-2 bg-slate-50 border-b flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">
+                    <div className="px-3 py-2 bg-muted border-b flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
                         {col.name}
                       </span>
-                      <Badge variant="secondary" className="h-5 text-[10px] bg-white">
+                      <Badge variant="secondary" className="h-5 text-[10px] bg-card">
                         {col.workers.length}
                       </Badge>
                     </div>
@@ -158,17 +158,17 @@ export default function HRDashboard() {
                       {col.workers.map((w) => (
                         <div
                           key={w.id}
-                          className={`p-2.5 rounded-lg border bg-white hover:shadow-sm transition-shadow cursor-pointer ${
+                          className={`p-2.5 rounded-lg border bg-card hover:shadow-sm transition-shadow cursor-pointer ${
                             w.stuck
                               ? "border-l-4 border-l-red-400 border-t-slate-200 border-r-slate-200 border-b-slate-200"
-                              : "border-slate-200"
+                              : "border-border"
                           }`}
                         >
                           <div className="flex items-center gap-1.5 mb-1.5">
-                            <div className="h-5 w-5 rounded-full bg-slate-100 flex items-center justify-center">
-                              <User className="h-3 w-3 text-slate-400" />
+                            <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                              <User className="h-3 w-3 text-muted-foreground" />
                             </div>
-                            <span className="text-[12px] font-medium text-slate-800 truncate">
+                            <span className="text-[12px] font-medium text-foreground truncate">
                               {w.name}
                             </span>
                           </div>
@@ -185,7 +185,7 @@ export default function HRDashboard() {
                               className={`text-[10px] ${
                                 w.daysInPhase > 7
                                   ? "text-red-500 font-semibold"
-                                  : "text-slate-400"
+                                  : "text-muted-foreground"
                               }`}
                             >
                               {w.daysInPhase}d
@@ -201,33 +201,33 @@ export default function HRDashboard() {
           </Card>
 
           {/* Action Items (40%) */}
-          <Card className="lg:col-span-2 bg-white shadow-sm">
+          <Card className="lg:col-span-2 bg-card shadow-sm">
             <div className="px-5 py-3.5 border-b flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-900">
+              <h3 className="text-sm font-semibold text-foreground">
                 Action Items
               </h3>
-              <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] h-5">
+              <Badge variant="secondary" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-[10px] h-5">
                 {ACTION_ITEMS.filter((a) => a.urgent).length} urgent
               </Badge>
             </div>
             <ScrollArea className="max-h-[360px]">
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-border">
                 {ACTION_ITEMS.map((item) => {
                   const btn = ACTION_BUTTONS[item.type];
                   return (
                     <div
                       key={item.id}
-                      className="px-5 py-3 flex items-start gap-3 hover:bg-slate-50/50"
+                      className="px-5 py-3 flex items-start gap-3 hover:bg-muted/50"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] text-slate-700 leading-snug">
+                        <p className="text-[13px] text-foreground leading-snug">
                           {item.text}
                         </p>
                         <p
                           className={`text-[11px] mt-1 ${
                             item.due === "Overdue"
                               ? "text-red-500 font-medium"
-                              : "text-slate-400"
+                              : "text-muted-foreground"
                           }`}
                         >
                           {item.due === "Overdue" ? "⚠ Overdue" : `Due: ${item.due}`}
@@ -253,28 +253,28 @@ export default function HRDashboard() {
         </div>
 
         {/* Row 3: Activity Log */}
-        <Card className="bg-white shadow-sm">
+        <Card className="bg-card shadow-sm">
           <div className="px-5 py-3.5 border-b">
-            <h3 className="text-sm font-semibold text-slate-900">
+            <h3 className="text-sm font-semibold text-foreground">
               Recent Activity
             </h3>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-border">
             {ACTIVITY_LOG.map((entry) => (
               <div
                 key={entry.id}
                 className="px-5 py-2.5 flex items-center gap-3"
               >
-                <div className="h-6 w-6 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                <div className="h-6 w-6 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                 </div>
-                <p className="text-[13px] text-slate-600 flex-1">
+                <p className="text-[13px] text-muted-foreground flex-1">
                   {entry.text}
                 </p>
-                <span className="text-[11px] text-slate-400 shrink-0">
+                <span className="text-[11px] text-muted-foreground shrink-0">
                   {entry.user}
                 </span>
-                <span className="text-[11px] text-slate-400 shrink-0 flex items-center gap-1">
+                <span className="text-[11px] text-muted-foreground shrink-0 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {entry.time}
                 </span>

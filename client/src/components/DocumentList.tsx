@@ -74,7 +74,7 @@ const STATUS_BADGES: Record<string, { label: string; className: string; icon: Re
   },
   expired: { 
     label: "Expired", 
-    className: "bg-slate-100 text-slate-700",
+    className: "bg-muted text-foreground",
     icon: <AlertTriangle className="h-3 w-3" />
   },
 };
@@ -126,7 +126,7 @@ export default function DocumentList({ employeeId, canReview = false, canDelete 
     if (mimeType === "application/pdf") {
       return <FileText className="h-4 w-4 text-red-500" />;
     }
-    return <File className="h-4 w-4 text-slate-500" />;
+    return <File className="h-4 w-4 text-muted-foreground" />;
   };
 
   const formatFileSize = (bytes: number) => {
@@ -182,7 +182,7 @@ export default function DocumentList({ employeeId, canReview = false, canDelete 
         </CardHeader>
         <CardContent>
           {!documents || documents.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
+            <div className="text-center py-8 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-4 text-slate-300" />
               <p>No documents uploaded yet</p>
             </div>
@@ -210,7 +210,7 @@ export default function DocumentList({ employeeId, canReview = false, canDelete 
                           {getFileIcon(doc.mimeType)}
                           <div>
                             <p className="font-medium text-sm">{doc.originalFileName}</p>
-                            <p className="text-xs text-slate-400">{formatFileSize(doc.fileSize)}</p>
+                            <p className="text-xs text-muted-foreground">{formatFileSize(doc.fileSize)}</p>
                           </div>
                         </div>
                       </TableCell>
@@ -223,20 +223,20 @@ export default function DocumentList({ employeeId, canReview = false, canDelete 
                           {status.label}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-slate-500">
+                      <TableCell className="text-sm text-muted-foreground">
                         {new Date(doc.createdAt).toLocaleDateString()}
                         {doc.uploadedByName && (
-                          <p className="text-xs text-slate-400">by {doc.uploadedByName}</p>
+                          <p className="text-xs text-muted-foreground">by {doc.uploadedByName}</p>
                         )}
                       </TableCell>
                       <TableCell>
                         {doc.expirationDate ? (
-                          <span className={`text-sm ${expiring ? "text-red-600 font-medium" : "text-slate-500"}`}>
+                          <span className={`text-sm ${expiring ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
                             {new Date(doc.expirationDate).toLocaleDateString()}
                             {expiring && " ⚠️"}
                           </span>
                         ) : (
-                          <span className="text-sm text-slate-400">-</span>
+                          <span className="text-sm text-muted-foreground">-</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -304,9 +304,9 @@ export default function DocumentList({ employeeId, canReview = false, canDelete 
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="p-3 rounded-lg bg-slate-50">
+            <div className="p-3 rounded-lg bg-muted">
               <p className="font-medium">{selectedDoc?.originalFileName}</p>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-foreground">
                 {CATEGORY_LABELS[selectedDoc?.category] || selectedDoc?.category}
               </p>
             </div>
@@ -363,7 +363,7 @@ export default function DocumentList({ employeeId, canReview = false, canDelete 
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
               <p className="font-medium text-red-700">{selectedDoc?.originalFileName}</p>
               <p className="text-sm text-red-600">
                 {CATEGORY_LABELS[selectedDoc?.category] || selectedDoc?.category}

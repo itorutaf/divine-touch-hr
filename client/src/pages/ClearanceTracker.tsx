@@ -13,11 +13,11 @@ import { useState } from "react";
 type ClearanceStatus = "clear" | "pending" | "expiring" | "expired" | "not_started";
 
 const STATUS_STYLES: Record<ClearanceStatus, { bg: string; label: string }> = {
-  clear: { bg: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "Clear" },
-  pending: { bg: "bg-blue-50 text-blue-700 border-blue-200", label: "Pending" },
-  expiring: { bg: "bg-amber-50 text-amber-700 border-amber-200", label: "Expiring" },
-  expired: { bg: "bg-red-50 text-red-700 border-red-200", label: "Expired" },
-  not_started: { bg: "bg-slate-100 text-slate-500", label: "Not Started" },
+  clear: { bg: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20", label: "Clear" },
+  pending: { bg: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20", label: "Pending" },
+  expiring: { bg: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20", label: "Expiring" },
+  expired: { bg: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20", label: "Expired" },
+  not_started: { bg: "bg-muted text-muted-foreground", label: "Not Started" },
 };
 
 const MOCK_WORKERS = [
@@ -45,7 +45,7 @@ function ClearanceCell({ status, expiry }: { status: ClearanceStatus; expiry: st
   return (
     <div className="flex flex-col items-center gap-0.5">
       <Badge variant="outline" className={`text-[10px] ${s.bg}`}>{s.label}</Badge>
-      {expiry && <span className="text-[10px] text-slate-400">{expiry}</span>}
+      {expiry && <span className="text-[10px] text-muted-foreground">{expiry}</span>}
     </div>
   );
 }
@@ -71,17 +71,17 @@ export default function ClearanceTracker() {
           <StatCard title="Expired" value={expired} icon={ShieldAlert} accentColor="red" />
         </div>
 
-        <Card className="bg-white shadow-sm p-4">
+        <Card className="bg-card shadow-sm p-4">
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Search workers..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Button variant="outline" size="sm"><Download className="h-4 w-4 mr-1.5" />Export CSV</Button>
           </div>
         </Card>
 
-        <Card className="bg-white shadow-sm overflow-hidden">
+        <Card className="bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -99,7 +99,7 @@ export default function ClearanceTracker() {
                 const overall = getOverallStatus(w);
                 const os = STATUS_STYLES[overall];
                 return (
-                  <TableRow key={w.id} className={overall === "expired" ? "bg-red-50/30" : overall === "expiring" ? "bg-amber-50/20" : ""}>
+                  <TableRow key={w.id} className={overall === "expired" ? "bg-red-500/10" : overall === "expiring" ? "bg-amber-500/10" : ""}>
                     <TableCell className="font-medium text-sm">{w.name}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-[10px]">{w.serviceLine}</Badge>

@@ -102,7 +102,7 @@ export default function Exceptions() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search by employee, issue, or owner..."
                   value={searchQuery}
@@ -110,7 +110,7 @@ export default function Exceptions() {
                   className="pl-10"
                 />
               </div>
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-muted-foreground">
                 {filteredExceptions.length} open {filteredExceptions.length === 1 ? "exception" : "exceptions"}
               </span>
             </div>
@@ -132,7 +132,7 @@ export default function Exceptions() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
               </div>
             ) : filteredExceptions.length === 0 ? (
-              <div className="h-64 flex flex-col items-center justify-center text-slate-500">
+              <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
                 <CheckCircle2 className="h-12 w-12 mb-4 text-emerald-300" />
                 <p>No open exceptions</p>
                 <p className="text-sm">All issues have been resolved</p>
@@ -146,7 +146,7 @@ export default function Exceptions() {
                     <div 
                       key={exception.id} 
                       className={`flex items-center justify-between p-4 rounded-lg border ${
-                        overdue ? "border-red-200 bg-red-50" : "bg-white"
+                        overdue ? "border-red-500/20 bg-red-500/10" : "bg-card"
                       }`}
                     >
                       <div className="flex items-center gap-4">
@@ -157,15 +157,15 @@ export default function Exceptions() {
                         </div>
                         <div>
                           <p className="font-medium">{exception.issue}</p>
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             {getEmployeeName(exception.employeeId)}
                           </p>
                           <div className="flex items-center gap-3 mt-1">
-                            <span className="text-xs text-slate-400">
+                            <span className="text-xs text-muted-foreground">
                               Owner: {exception.owner || "Unassigned"}
                             </span>
                             {exception.dueDate && (
-                              <span className={`text-xs ${overdue ? "text-red-600 font-medium" : "text-slate-400"}`}>
+                              <span className={`text-xs ${overdue ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
                                 Due: {new Date(exception.dueDate).toLocaleDateString()}
                                 {overdue && " (Overdue)"}
                               </span>
@@ -216,7 +216,7 @@ export default function Exceptions() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="p-3 rounded-lg bg-slate-50">
+              <div className="p-3 rounded-lg bg-muted">
                 <p className="font-medium">{selectedException?.issue}</p>
               </div>
               <div>

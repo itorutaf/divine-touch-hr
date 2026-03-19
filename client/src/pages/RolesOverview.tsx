@@ -43,11 +43,11 @@ function StatusDot({ status }: { status: ScorecardMetric["status"] }) {
 
 function PermissionBadge({ enabled, label }: { enabled: boolean; label: string }) {
   return enabled ? (
-    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 text-xs font-medium">
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
       <Unlock className="h-3 w-3" /> {label}
     </div>
   ) : (
-    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-400 text-xs">
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted text-muted-foreground text-xs">
       <Lock className="h-3 w-3" /> {label}
     </div>
   );
@@ -89,12 +89,12 @@ export default function RolesOverview() {
                   flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all
                   ${isActive
                     ? `${m.bgColor} ${m.color} border-current ring-1 ring-current/20`
-                    : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                    : "bg-card border-border text-muted-foreground hover:border-border hover:bg-muted"
                   }
                 `}
               >
-                <div className={`h-6 w-6 rounded text-[9px] font-bold flex items-center justify-center ${isActive ? "bg-current/10" : "bg-slate-100"}`}>
-                  <span className={isActive ? m.color : "text-slate-400"}>{ROLE_ICONS[role]}</span>
+                <div className={`h-6 w-6 rounded text-[9px] font-bold flex items-center justify-center ${isActive ? "bg-current/10" : "bg-muted"}`}>
+                  <span className={isActive ? m.color : "text-muted-foreground"}>{ROLE_ICONS[role]}</span>
                 </div>
                 {m.label}
               </button>
@@ -112,10 +112,10 @@ export default function RolesOverview() {
                   {usersInRole.length} user{usersInRole.length !== 1 ? "s" : ""}
                 </Badge>
               </div>
-              <p className="text-sm text-slate-600 max-w-lg">{meta.description}</p>
+              <p className="text-sm text-muted-foreground max-w-lg">{meta.description}</p>
               <div className="flex flex-wrap gap-2 mt-3">
                 {meta.responsibilities.map((r) => (
-                  <span key={r} className="text-[10px] px-2 py-0.5 rounded-full bg-white/80 text-slate-600 border border-slate-200">
+                  <span key={r} className="text-[10px] px-2 py-0.5 rounded-full bg-white/80 text-muted-foreground border border-border">
                     {r}
                   </span>
                 ))}
@@ -136,14 +136,14 @@ export default function RolesOverview() {
 
           {/* ── Scorecard Tab ──────────────────────── */}
           <TabsContent value="scorecard" className="mt-4 space-y-4">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Live metrics showing how well this role's duties are being fulfilled.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {scorecard.map((metric) => (
                 <Card
                   key={metric.key}
-                  className={`p-4 bg-white shadow-sm border-l-4 ${
+                  className={`p-4 bg-card shadow-sm border-l-4 ${
                     metric.status === "good" ? "border-l-emerald-500"
                     : metric.status === "warning" ? "border-l-amber-500"
                     : "border-l-red-500"
@@ -151,11 +151,11 @@ export default function RolesOverview() {
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-[10px] uppercase tracking-wide text-slate-500 font-medium">{metric.label}</p>
-                      <p className="text-2xl font-bold text-slate-900 tabular-nums mt-1">{metric.value}</p>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{metric.label}</p>
+                      <p className="text-2xl font-bold text-foreground tabular-nums mt-1">{metric.value}</p>
                       <div className="flex items-center gap-2 mt-1">
                         {metric.target && (
-                          <span className="text-[10px] text-slate-400">Target: {metric.target}</span>
+                          <span className="text-[10px] text-muted-foreground">Target: {metric.target}</span>
                         )}
                         {metric.trend && (
                           <span className={`text-[10px] font-medium flex items-center gap-0.5 ${
@@ -176,10 +176,10 @@ export default function RolesOverview() {
 
           {/* ── Permissions Tab ─────────────────────── */}
           <TabsContent value="permissions" className="mt-4 space-y-4">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Module-level access control. Toggle permissions for this role.
             </p>
-            <Card className="bg-white shadow-sm overflow-hidden">
+            <Card className="bg-card shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -216,26 +216,26 @@ export default function RolesOverview() {
               </Table>
             </Card>
             {activeRole === "admin" && (
-              <p className="text-xs text-slate-400 italic">Admin permissions cannot be modified — full access to all modules.</p>
+              <p className="text-xs text-muted-foreground italic">Admin permissions cannot be modified — full access to all modules.</p>
             )}
           </TabsContent>
 
           {/* ── Notifications Tab ──────────────────── */}
           <TabsContent value="notifications" className="mt-4 space-y-4">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Configure which push notifications and alerts this role receives.
             </p>
-            <Card className="bg-white shadow-sm">
-              <div className="divide-y divide-slate-100">
+            <Card className="bg-card shadow-sm">
+              <div className="divide-y divide-border">
                 {notifications.map((notif) => (
                   <div key={notif.key} className="flex items-center justify-between px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${notif.enabled ? "bg-emerald-50" : "bg-slate-100"}`}>
-                        <Bell className={`h-4 w-4 ${notif.enabled ? "text-emerald-600" : "text-slate-400"}`} />
+                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${notif.enabled ? "bg-emerald-500/10" : "bg-muted"}`}>
+                        <Bell className={`h-4 w-4 ${notif.enabled ? "text-emerald-600" : "text-muted-foreground"}`} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-900">{notif.label}</p>
-                        <p className="text-xs text-slate-500">{notif.description}</p>
+                        <p className="text-sm font-medium text-foreground">{notif.label}</p>
+                        <p className="text-xs text-muted-foreground">{notif.description}</p>
                       </div>
                     </div>
                     <Switch checked={notif.enabled} />
@@ -247,12 +247,12 @@ export default function RolesOverview() {
 
           {/* ── Users Tab ──────────────────────────── */}
           <TabsContent value="users" className="mt-4 space-y-4">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               People currently assigned to the <strong>{meta.label}</strong> role.
             </p>
             {usersInRole.length > 0 ? (
-              <Card className="bg-white shadow-sm">
-                <div className="divide-y divide-slate-100">
+              <Card className="bg-card shadow-sm">
+                <div className="divide-y divide-border">
                   {usersInRole.map((u) => (
                     <div key={u.email} className="flex items-center gap-3 px-5 py-3.5">
                       <Avatar className="h-9 w-9 border">
@@ -261,18 +261,18 @@ export default function RolesOverview() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900">{u.name}</p>
-                        <p className="text-xs text-slate-500">{u.email}</p>
+                        <p className="text-sm font-medium text-foreground">{u.name}</p>
+                        <p className="text-xs text-muted-foreground">{u.email}</p>
                       </div>
-                      <span className="text-xs text-slate-400">Last login: {u.lastLogin}</span>
+                      <span className="text-xs text-muted-foreground">Last login: {u.lastLogin}</span>
                     </div>
                   ))}
                 </div>
               </Card>
             ) : (
-              <Card className="bg-white shadow-sm p-8 text-center">
-                <Users className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">No users assigned to this role</p>
+              <Card className="bg-card shadow-sm p-8 text-center">
+                <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">No users assigned to this role</p>
               </Card>
             )}
           </TabsContent>

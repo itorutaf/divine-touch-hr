@@ -125,7 +125,7 @@ export default function Approvals() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <Filter className="h-4 w-4 text-slate-400" />
+              <Filter className="h-4 w-4 text-muted-foreground" />
               <Select value={gateFilter} onValueChange={setGateFilter}>
                 <SelectTrigger className="w-[280px]">
                   <SelectValue placeholder="Filter by gate type" />
@@ -138,7 +138,7 @@ export default function Approvals() {
                   ))}
                 </SelectContent>
               </Select>
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-muted-foreground">
                 {filteredApprovals.length} {filteredApprovals.length === 1 ? "approval" : "approvals"} pending
               </span>
             </div>
@@ -157,7 +157,7 @@ export default function Approvals() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
               </div>
             ) : filteredApprovals.length === 0 ? (
-              <div className="h-64 flex flex-col items-center justify-center text-slate-500">
+              <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
                 <CheckCircle2 className="h-12 w-12 mb-4 text-emerald-300" />
                 <p>No pending approvals</p>
                 <p className="text-sm">All gates are up to date</p>
@@ -171,7 +171,7 @@ export default function Approvals() {
                     <div 
                       key={approval.id} 
                       className={`flex items-center justify-between p-4 rounded-lg border ${
-                        canApprove ? "bg-white hover:bg-slate-50" : "bg-slate-50"
+                        canApprove ? "bg-card hover:bg-muted" : "bg-muted"
                       }`}
                     >
                       <div className="flex items-center gap-4">
@@ -180,17 +180,17 @@ export default function Approvals() {
                         </div>
                         <div>
                           <p className="font-medium">{GATE_LABELS[approval.gateType]}</p>
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-muted-foreground">
                             {getEmployeeName(approval.employeeId)}
                           </p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-muted-foreground">
                             Created: {new Date(approval.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         {!canApprove && (
-                          <Badge variant="outline" className="text-slate-500">
+                          <Badge variant="outline" className="text-muted-foreground">
                             Not Authorized
                           </Badge>
                         )}

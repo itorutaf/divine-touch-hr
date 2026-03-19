@@ -31,17 +31,17 @@ import {
 } from "lucide-react";
 
 const STATUS_STYLES: Record<string, string> = {
-  referral: "bg-slate-100 text-slate-700",
-  assessment: "bg-blue-50 text-blue-700",
-  active: "bg-emerald-50 text-emerald-700",
-  on_hold: "bg-amber-50 text-amber-700",
-  discharged: "bg-red-50 text-red-700",
+  referral: "bg-muted text-foreground",
+  assessment: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  active: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  on_hold: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  discharged: "bg-red-500/10 text-red-700 dark:text-red-400",
 };
 
 const SERVICE_LINE_STYLES: Record<string, string> = {
-  OLTL: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  ODP: "bg-blue-50 text-blue-700 border-blue-200",
-  Skilled: "bg-purple-50 text-purple-700 border-purple-200",
+  OLTL: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+  ODP: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  Skilled: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
 };
 
 // Mock data
@@ -97,18 +97,18 @@ export default function Clients() {
             { label: "Referrals", count: statusCounts.referral, color: "border-l-blue-500" },
             { label: "On Hold", count: statusCounts.on_hold, color: "border-l-amber-500" },
           ].map((s) => (
-            <Card key={s.label} className={`p-4 border-l-4 ${s.color} bg-white shadow-sm`}>
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{s.label}</p>
-              <p className="text-2xl font-bold text-slate-900 tabular-nums">{s.count}</p>
+            <Card key={s.label} className={`p-4 border-l-4 ${s.color} bg-card shadow-sm`}>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{s.label}</p>
+              <p className="text-2xl font-bold text-foreground tabular-nums">{s.count}</p>
             </Card>
           ))}
         </div>
 
         {/* Filters */}
-        <Card className="bg-white shadow-sm p-4">
+        <Card className="bg-card shadow-sm p-4">
           <div className="flex flex-wrap gap-3 items-center">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search clients..."
                 value={search}
@@ -144,7 +144,7 @@ export default function Clients() {
         </Card>
 
         {/* Table */}
-        <Card className="bg-white shadow-sm overflow-hidden">
+        <Card className="bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -160,13 +160,13 @@ export default function Clients() {
             </TableHeader>
             <TableBody>
               {filtered.map((client) => (
-                <TableRow key={client.id} className="cursor-pointer hover:bg-slate-50/80">
+                <TableRow key={client.id} className="cursor-pointer hover:bg-muted/80">
                   <TableCell>
                     <div>
-                      <p className="font-medium text-slate-900 text-sm">
+                      <p className="font-medium text-foreground text-sm">
                         {client.firstName} {client.lastName}
                       </p>
-                      <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                         <Phone className="h-3 w-3" />
                         {client.phone}
                       </p>
@@ -182,17 +182,17 @@ export default function Clients() {
                       {client.status.replace("_", " ")}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-sm text-slate-600">{client.mco}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{client.mco}</TableCell>
                   <TableCell className="text-right tabular-nums text-sm font-medium">
                     {client.hoursPerWeek || "—"}
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
                       R{client.region} · {client.county}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-slate-600">{client.coordinator}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{client.coordinator}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-7 w-7">

@@ -42,17 +42,17 @@ const PHASES = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  "Pending Review": "bg-slate-100 text-slate-700",
+  "Pending Review": "bg-muted text-foreground",
   "In Progress": "bg-blue-100 text-blue-700",
   "Action Required": "bg-amber-100 text-amber-700",
   "On Hold": "bg-orange-100 text-orange-700",
   "Complete": "bg-emerald-100 text-emerald-700",
-  "Withdrawn": "bg-gray-100 text-gray-700",
+  "Withdrawn": "bg-muted text-foreground",
   "Rejected": "bg-red-100 text-red-700",
 };
 
 const PHASE_COLORS: Record<string, string> = {
-  "Intake": "bg-slate-500",
+  "Intake": "bg-muted0",
   "Screening": "bg-amber-500",
   "Documentation": "bg-blue-500",
   "Verification": "bg-purple-500",
@@ -67,8 +67,8 @@ const SERVICE_LINES = {
   "All": {
     label: "All Employees",
     icon: Users,
-    color: "text-slate-600",
-    bgColor: "bg-slate-100",
+    color: "text-muted-foreground",
+    bgColor: "bg-muted",
     description: "View all employees across all service lines"
   },
   "OLTL": {
@@ -195,7 +195,7 @@ export default function Employees() {
       <div className="space-y-6">
         {/* Service Line Tabs */}
         <Tabs value={serviceLineTab} onValueChange={(v) => setServiceLineTab(v as ServiceLineKey)} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-slate-100">
+          <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-muted">
             {(Object.keys(SERVICE_LINES) as ServiceLineKey[]).map((key) => {
               const config = SERVICE_LINES[key];
               const Icon = config.icon;
@@ -205,10 +205,10 @@ export default function Employees() {
                 <TabsTrigger 
                   key={key} 
                   value={key}
-                  className="flex flex-col items-center gap-1 py-3 px-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="flex flex-col items-center gap-1 py-3 px-2 data-[state=active]:bg-card data-[state=active]:shadow-sm"
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className={`h-4 w-4 ${serviceLineTab === key ? config.color : 'text-slate-400'}`} />
+                    <Icon className={`h-4 w-4 ${serviceLineTab === key ? config.color : 'text-muted-foreground'}`} />
                     <span className="text-sm font-medium">{key === "All" ? "All" : key === "Skilled" ? "OLTL Skilled" : key}</span>
                   </div>
                   <Badge variant="secondary" className={`text-xs ${serviceLineTab === key ? config.bgColor : ''}`}>
@@ -233,7 +233,7 @@ export default function Employees() {
                   </div>
                   <div>
                     <h3 className="font-semibold">{currentServiceLine.label}</h3>
-                    <p className="text-sm text-slate-600">{currentServiceLine.description}</p>
+                    <p className="text-sm text-muted-foreground">{currentServiceLine.description}</p>
                   </div>
                   {'docType' in currentServiceLine && (
                     <Badge className="ml-auto" variant="outline">
@@ -250,7 +250,7 @@ export default function Employees() {
             <CardContent className="pt-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search by name, email, or ID..."
                     value={searchQuery}
@@ -259,7 +259,7 @@ export default function Employees() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-slate-400" />
+                  <Filter className="h-4 w-4 text-muted-foreground" />
                   <Select value={phaseFilter} onValueChange={setPhaseFilter}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Filter by phase" />
@@ -283,7 +283,7 @@ export default function Employees() {
                   <ServiceLineIcon className={`h-5 w-5 ${currentServiceLine.color}`} />
                   <span>{currentServiceLine.label}</span>
                 </div>
-                <span className="text-sm font-normal text-slate-500">
+                <span className="text-sm font-normal text-muted-foreground">
                   {filteredEmployees.length} {filteredEmployees.length === 1 ? "employee" : "employees"}
                 </span>
               </CardTitle>
@@ -300,8 +300,8 @@ export default function Employees() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
                 </div>
               ) : filteredEmployees.length === 0 ? (
-                <div className="h-64 flex flex-col items-center justify-center text-slate-500">
-                  <ServiceLineIcon className="h-12 w-12 mb-4 text-slate-300" />
+                <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
+                  <ServiceLineIcon className="h-12 w-12 mb-4 text-muted-foreground" />
                   <p>No employees found in {currentServiceLine.label}</p>
                   {searchQuery && <p className="text-sm">Try adjusting your search</p>}
                   {serviceLineTab !== "All" && (
@@ -333,7 +333,7 @@ export default function Employees() {
                     </TableHeader>
                     <TableBody>
                       {filteredEmployees.map((employee) => (
-                        <TableRow key={employee.id} className="cursor-pointer hover:bg-slate-50">
+                        <TableRow key={employee.id} className="cursor-pointer hover:bg-muted">
                           <TableCell className="font-mono text-sm">{employee.employeeId}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
@@ -345,7 +345,7 @@ export default function Employees() {
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-slate-600">{employee.email || "-"}</TableCell>
+                          <TableCell className="text-muted-foreground">{employee.email || "-"}</TableCell>
                           <TableCell>
                             {employee.roleAppliedFor ? (
                               <Badge variant="outline" className="text-xs">{employee.roleAppliedFor}</Badge>
@@ -358,7 +358,7 @@ export default function Employees() {
                                   employee.serviceLine === "OLTL" ? "bg-blue-100 text-blue-700" :
                                   employee.serviceLine === "ODP" ? "bg-emerald-100 text-emerald-700" :
                                   employee.serviceLine === "Skilled" ? "bg-purple-100 text-purple-700" :
-                                  "bg-slate-100 text-slate-700"
+                                  "bg-muted text-foreground"
                                 }`}
                               >
                                 {employee.serviceLine === "Skilled" ? "OLTL Skilled" : employee.serviceLine}
@@ -367,24 +367,24 @@ export default function Employees() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <div className={`h-2 w-2 rounded-full ${PHASE_COLORS[employee.currentPhase || ""] || "bg-slate-300"}`}></div>
+                              <div className={`h-2 w-2 rounded-full ${PHASE_COLORS[employee.currentPhase || ""] || "bg-muted-foreground/30"}`}></div>
                               <span className="text-sm">{employee.currentPhase}</span>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge className={STATUS_COLORS[employee.status || ""] || "bg-slate-100"}>
+                            <Badge className={STATUS_COLORS[employee.status || ""] || "bg-muted"}>
                               {employee.status}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                              <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                                 <div 
                                   className="h-full bg-emerald-500 rounded-full"
                                   style={{ width: `${employee.completionPercent || 0}%` }}
                                 ></div>
                               </div>
-                              <span className="text-xs text-slate-500">{employee.completionPercent || 0}%</span>
+                              <span className="text-xs text-muted-foreground">{employee.completionPercent || 0}%</span>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">

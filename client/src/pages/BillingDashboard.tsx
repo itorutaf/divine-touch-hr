@@ -37,10 +37,10 @@ const MOCK_CLAIMS = [
 ];
 
 const CLAIM_STATUS_STYLES = {
-  submitted: "bg-blue-50 text-blue-700",
-  pending: "bg-amber-50 text-amber-700",
-  paid: "bg-emerald-50 text-emerald-700",
-  denied: "bg-red-50 text-red-700",
+  submitted: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  pending: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  paid: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  denied: "bg-red-500/10 text-red-700 dark:text-red-400",
 };
 
 export default function BillingDashboard() {
@@ -62,7 +62,7 @@ export default function BillingDashboard() {
           </TabsList>
 
           <TabsContent value="claims" className="mt-4">
-            <Card className="bg-white shadow-sm overflow-hidden">
+            <Card className="bg-card shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -79,10 +79,10 @@ export default function BillingDashboard() {
                     <TableRow key={c.id}>
                       <TableCell className="font-mono text-xs">{c.id}</TableCell>
                       <TableCell className="font-medium text-sm">{c.client}</TableCell>
-                      <TableCell className="text-sm text-slate-600">{c.mco}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{c.mco}</TableCell>
                       <TableCell className="text-right tabular-nums font-medium">${c.amount.toLocaleString()}</TableCell>
                       <TableCell><Badge className={`text-[10px] ${CLAIM_STATUS_STYLES[c.status]}`}>{c.status}</Badge></TableCell>
-                      <TableCell className="text-xs text-slate-500">{c.date}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{c.date}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -92,8 +92,8 @@ export default function BillingDashboard() {
 
           <TabsContent value="aging" className="mt-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <Card className="bg-white shadow-sm p-5">
-                <h3 className="text-sm font-semibold text-slate-900 mb-4">Claims by Age Bucket</h3>
+              <Card className="bg-card shadow-sm p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Claims by Age Bucket</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={AGING_DATA}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -106,8 +106,8 @@ export default function BillingDashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </Card>
-              <Card className="bg-white shadow-sm p-5">
-                <h3 className="text-sm font-semibold text-slate-900 mb-4">Aging Distribution</h3>
+              <Card className="bg-card shadow-sm p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Aging Distribution</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie data={AGING_DATA} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="amount" nameKey="bucket">
@@ -120,7 +120,7 @@ export default function BillingDashboard() {
                   {AGING_DATA.map((d) => (
                     <div key={d.bucket} className="flex items-center gap-1.5 text-xs">
                       <div className="h-2 w-2 rounded-full" style={{ background: d.color }} />
-                      <span className="text-slate-500">{d.bucket}</span>
+                      <span className="text-muted-foreground">{d.bucket}</span>
                       <span className="font-medium tabular-nums">{d.count}</span>
                     </div>
                   ))}
@@ -130,8 +130,8 @@ export default function BillingDashboard() {
           </TabsContent>
 
           <TabsContent value="revenue" className="mt-4">
-            <Card className="bg-white shadow-sm p-5">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">Revenue vs Collections (6 months)</h3>
+            <Card className="bg-card shadow-sm p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4">Revenue vs Collections (6 months)</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={REVENUE_TREND}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />

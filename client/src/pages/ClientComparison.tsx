@@ -42,10 +42,10 @@ const MOCK_CLIENTS = [
 
 const REC_STYLES: Record<string, { bg: string; label: string }> = {
   STRONG_YES: { bg: "bg-emerald-100 text-emerald-800", label: "Strong Yes" },
-  YES: { bg: "bg-emerald-50 text-emerald-700", label: "Yes" },
-  MAYBE: { bg: "bg-amber-50 text-amber-700", label: "Maybe" },
-  CAUTION: { bg: "bg-orange-50 text-orange-700", label: "Caution" },
-  HARD_NO: { bg: "bg-red-50 text-red-700", label: "Hard No" },
+  YES: { bg: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400", label: "Yes" },
+  MAYBE: { bg: "bg-amber-500/10 text-amber-700 dark:text-amber-400", label: "Maybe" },
+  CAUTION: { bg: "bg-orange-500/10 text-orange-700 dark:text-orange-400", label: "Caution" },
+  HARD_NO: { bg: "bg-red-500/10 text-red-700 dark:text-red-400", label: "Hard No" },
 };
 
 function MetricRow({ label, valueA, valueB, format = "number", higherIsBetter = true }: {
@@ -63,12 +63,12 @@ function MetricRow({ label, valueA, valueB, format = "number", higherIsBetter = 
   const winner = higherIsBetter ? (diff > 0 ? "A" : diff < 0 ? "B" : "tie") : (diff < 0 ? "A" : diff > 0 ? "B" : "tie");
 
   return (
-    <div className="flex items-center py-2.5 border-b border-slate-100 last:border-0">
-      <span className={`w-[120px] tabular-nums text-sm font-medium text-right pr-4 ${winner === "A" ? "text-emerald-600" : "text-slate-700"}`}>
+    <div className="flex items-center py-2.5 border-b border-border last:border-0">
+      <span className={`w-[120px] tabular-nums text-sm font-medium text-right pr-4 ${winner === "A" ? "text-emerald-600" : "text-foreground"}`}>
         {fmt(valueA)}
       </span>
-      <span className="flex-1 text-center text-xs text-slate-500 font-medium">{label}</span>
-      <span className={`w-[120px] tabular-nums text-sm font-medium text-left pl-4 ${winner === "B" ? "text-emerald-600" : "text-slate-700"}`}>
+      <span className="flex-1 text-center text-xs text-muted-foreground font-medium">{label}</span>
+      <span className={`w-[120px] tabular-nums text-sm font-medium text-left pl-4 ${winner === "B" ? "text-emerald-600" : "text-foreground"}`}>
         {fmt(valueB)}
       </span>
     </div>
@@ -100,7 +100,7 @@ export default function ClientComparison() {
       <div className="space-y-4 max-w-[1200px]">
         {/* Client Selectors */}
         <div className="grid grid-cols-2 gap-4">
-          <Card className="p-4 bg-white shadow-sm border-l-4 border-l-emerald-500">
+          <Card className="p-4 bg-card shadow-sm border-l-4 border-l-emerald-500">
             <Select value={clientA.id} onValueChange={(v) => setClientA(MOCK_CLIENTS.find((c) => c.id === v)!)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -110,10 +110,10 @@ export default function ClientComparison() {
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline" className="text-[10px]">{clientA.serviceLine}</Badge>
               <Badge className={`text-[10px] ${recA.bg}`}>{recA.label}</Badge>
-              <span className="text-xs text-slate-400">Score: {clientA.profitScore}</span>
+              <span className="text-xs text-muted-foreground">Score: {clientA.profitScore}</span>
             </div>
           </Card>
-          <Card className="p-4 bg-white shadow-sm border-l-4 border-l-blue-500">
+          <Card className="p-4 bg-card shadow-sm border-l-4 border-l-blue-500">
             <Select value={clientB.id} onValueChange={(v) => setClientB(MOCK_CLIENTS.find((c) => c.id === v)!)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -123,15 +123,15 @@ export default function ClientComparison() {
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline" className="text-[10px]">{clientB.serviceLine}</Badge>
               <Badge className={`text-[10px] ${recB.bg}`}>{recB.label}</Badge>
-              <span className="text-xs text-slate-400">Score: {clientB.profitScore}</span>
+              <span className="text-xs text-muted-foreground">Score: {clientB.profitScore}</span>
             </div>
           </Card>
         </div>
 
         {/* Side-by-side metrics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card className="bg-white shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3 text-center">Head-to-Head</h3>
+          <Card className="bg-card shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-3 text-center">Head-to-Head</h3>
             <div className="flex items-center justify-between px-4 mb-2">
               <span className="text-xs font-medium text-emerald-600">{clientA.name}</span>
               <span className="text-xs font-medium text-blue-600">{clientB.name}</span>
@@ -147,8 +147,8 @@ export default function ClientComparison() {
             <MetricRow label="Reimb. Rate" valueA={clientA.reimbRate} valueB={clientB.reimbRate} format="currency" />
           </Card>
 
-          <Card className="bg-white shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3 text-center">Profile Comparison</h3>
+          <Card className="bg-card shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-3 text-center">Profile Comparison</h3>
             <ResponsiveContainer width="100%" height={280}>
               <RadarChart data={radarData}>
                 <PolarGrid stroke="#e2e8f0" />
@@ -163,8 +163,8 @@ export default function ClientComparison() {
         </div>
 
         {/* Revenue comparison bar */}
-        <Card className="bg-white shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-slate-900 mb-3">Weekly Financial Comparison</h3>
+        <Card className="bg-card shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-3">Weekly Financial Comparison</h3>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={barData} barGap={8}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />

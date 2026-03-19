@@ -13,9 +13,9 @@ import {
 import { useState } from "react";
 
 const SERVICE_LINE_STYLES: Record<string, string> = {
-  OLTL: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  ODP: "bg-blue-50 text-blue-700 border-blue-200",
-  Skilled: "bg-purple-50 text-purple-700 border-purple-200",
+  OLTL: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+  ODP: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  Skilled: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
 };
 
 const MOCK_CLIENTS_NEEDING = [
@@ -33,9 +33,9 @@ const MOCK_CAREGIVERS = [
 ];
 
 const URGENCY_STYLES = {
-  high: "bg-red-50 text-red-700 border-red-200",
-  medium: "bg-amber-50 text-amber-700 border-amber-200",
-  low: "bg-slate-100 text-slate-600",
+  high: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
+  medium: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+  low: "bg-muted text-muted-foreground",
 };
 
 export default function CaregiverMatching() {
@@ -49,7 +49,7 @@ export default function CaregiverMatching() {
     <AppShell title="Caregiver Matching">
       <div className="space-y-4 max-w-[1440px]">
         {/* Clients needing assignment */}
-        <Card className="bg-white shadow-sm">
+        <Card className="bg-card shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <Users className="h-4 w-4 text-emerald-600" />
@@ -64,16 +64,16 @@ export default function CaregiverMatching() {
                   onClick={() => setSelectedClient(client)}
                   className={`p-4 rounded-lg border text-left transition-all ${
                     selectedClient.id === client.id
-                      ? "border-emerald-300 bg-emerald-50/50 ring-1 ring-emerald-200"
-                      : "border-slate-200 hover:border-slate-300 bg-white"
+                      ? "border-emerald-300 bg-emerald-500/10 ring-1 ring-emerald-200"
+                      : "border-border hover:border-border bg-card"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">{client.name}</p>
+                      <p className="text-sm font-semibold text-foreground">{client.name}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className={`text-[9px] ${SERVICE_LINE_STYLES[client.serviceLine]}`}>{client.serviceLine}</Badge>
-                        <span className="text-xs text-slate-500 flex items-center gap-0.5">
+                        <span className="text-xs text-muted-foreground flex items-center gap-0.5">
                           <MapPin className="h-3 w-3" /> R{client.region} · {client.county}
                         </span>
                       </div>
@@ -90,26 +90,26 @@ export default function CaregiverMatching() {
         </Card>
 
         {/* Matching results */}
-        <div className="flex items-center gap-2 text-sm text-slate-500">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Star className="h-4 w-4 text-amber-500" />
-          <span>Showing {matchedCaregivers.length} matches for <strong className="text-slate-900">{selectedClient.name}</strong> — sorted by match score</span>
+          <span>Showing {matchedCaregivers.length} matches for <strong className="text-foreground">{selectedClient.name}</strong> — sorted by match score</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {matchedCaregivers.map((cg) => {
             const scoreColor = cg.matchScore >= 80 ? "text-emerald-600" : cg.matchScore >= 60 ? "text-amber-600" : "text-red-500";
-            const scoreBg = cg.matchScore >= 80 ? "bg-emerald-50" : cg.matchScore >= 60 ? "bg-amber-50" : "bg-red-50";
+            const scoreBg = cg.matchScore >= 80 ? "bg-emerald-500/10" : cg.matchScore >= 60 ? "bg-amber-500/10" : "bg-red-500/10";
 
             return (
-              <Card key={cg.id} className={`bg-white shadow-sm overflow-hidden ${cg.matchScore < 50 ? "opacity-60" : ""}`}>
+              <Card key={cg.id} className={`bg-card shadow-sm overflow-hidden ${cg.matchScore < 50 ? "opacity-60" : ""}`}>
                 <div className={`h-1 ${cg.matchScore >= 80 ? "bg-emerald-500" : cg.matchScore >= 60 ? "bg-amber-500" : "bg-red-400"}`} />
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">{cg.name}</p>
+                      <p className="text-sm font-semibold text-foreground">{cg.name}</p>
                       <div className="flex items-center gap-1.5 mt-1">
                         <Badge variant="outline" className={`text-[9px] ${SERVICE_LINE_STYLES[cg.serviceLine]}`}>{cg.serviceLine}</Badge>
-                        <span className="text-[10px] text-slate-400">{cg.county}</span>
+                        <span className="text-[10px] text-muted-foreground">{cg.county}</span>
                       </div>
                     </div>
                     <div className={`h-10 w-10 rounded-lg ${scoreBg} flex items-center justify-center`}>
@@ -119,13 +119,13 @@ export default function CaregiverMatching() {
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500 flex items-center gap-1">
+                      <span className="text-muted-foreground flex items-center gap-1">
                         <Clock className="h-3 w-3" /> Available
                       </span>
                       <span className="font-medium tabular-nums">{cg.availableHours}h/wk</span>
                     </div>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Clearances</span>
+                      <span className="text-muted-foreground">Clearances</span>
                       <span className="flex items-center gap-1">
                         {cg.clearanceStatus === "clear" ? (
                           <><CheckCircle2 className="h-3 w-3 text-emerald-500" /> <span className="text-emerald-600">Clear</span></>
@@ -137,7 +137,7 @@ export default function CaregiverMatching() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Training</span>
+                      <span className="text-muted-foreground">Training</span>
                       <span className="flex items-center gap-1">
                         {cg.trainingComplete ? (
                           <><CheckCircle2 className="h-3 w-3 text-emerald-500" /> <span className="text-emerald-600">Complete</span></>

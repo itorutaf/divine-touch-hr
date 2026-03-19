@@ -30,8 +30,13 @@ const TYPE_ICONS = {
 };
 
 const SEVERITY_STYLES = {
-  critical: "bg-red-50 text-red-700 border-red-200",
-  warning: "bg-amber-50 text-amber-700 border-amber-200",
+  critical: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
+  warning: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+};
+
+const SEVERITY_ROW = {
+  critical: "bg-red-500/[0.03] dark:bg-red-500/[0.06] border-l-2 border-l-red-500",
+  warning: "bg-amber-500/[0.02] dark:bg-amber-500/[0.04] border-l-2 border-l-amber-400",
 };
 
 interface ExceptionFeedProps {
@@ -44,48 +49,54 @@ export default function ExceptionFeed({
   maxHeight = "360px",
 }: ExceptionFeedProps) {
   return (
-    <Card className="bg-white shadow-sm">
-      <div className="flex items-center justify-between px-5 py-3.5 border-b">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-slate-900">Exceptions</h3>
-          <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200 text-[10px] h-5">
+    <Card className="bg-card shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
+        <div className="flex items-center gap-2.5">
+          <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+          <h3 className="text-sm font-bold text-foreground tracking-tight">Exceptions</h3>
+          <Badge variant="secondary" className="bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20 text-[10px] h-5 font-semibold">
             {items.filter((i) => i.severity === "critical").length} critical
           </Badge>
         </div>
-        <span className="text-xs text-slate-400">{items.length} items</span>
+        <span className="text-[11px] text-muted-foreground font-medium">{items.length} items</span>
       </div>
 
       <ScrollArea style={{ maxHeight }}>
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-border/50">
           {items.map((item) => {
             const Icon = TYPE_ICONS[item.type];
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-3.5 px-5 py-3 hover:bg-slate-50/50 transition-colors"
+                className={`
+                  flex items-center gap-4 px-5 py-3.5
+                  ${SEVERITY_ROW[item.severity]}
+                  hover:bg-accent/30 transition-all duration-200
+                  group cursor-pointer
+                `}
               >
                 <div
-                  className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+                  className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 ${
                     item.severity === "critical"
-                      ? "bg-red-50 text-red-500"
-                      : "bg-amber-50 text-amber-500"
+                      ? "bg-red-500/10 dark:bg-red-500/20 text-red-500"
+                      : "bg-amber-500/10 dark:bg-amber-500/20 text-amber-500"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] text-slate-700 truncate">
+                  <p className="text-[13px] text-foreground font-medium truncate group-hover:text-primary transition-colors">
                     {item.description}
                   </p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
                     {item.timestamp}
                   </p>
                 </div>
 
                 <Badge
                   variant="outline"
-                  className={`text-[10px] shrink-0 ${SEVERITY_STYLES[item.severity]}`}
+                  className={`text-[10px] shrink-0 font-semibold ${SEVERITY_STYLES[item.severity]}`}
                 >
                   {item.severity}
                 </Badge>
@@ -94,10 +105,10 @@ export default function ExceptionFeed({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 px-2.5 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 shrink-0"
+                    className="h-7 px-2.5 text-xs text-primary hover:text-primary hover:bg-primary/10 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity"
                   >
                     {item.actionLabel}
-                    <ArrowRight className="h-3 w-3 ml-1" />
+                    <ArrowRight className="h-3 w-3 ml-1 transition-transform group-hover:translate-x-0.5" />
                   </Button>
                 )}
               </div>
@@ -105,7 +116,7 @@ export default function ExceptionFeed({
           })}
 
           {items.length === 0 && (
-            <div className="py-12 text-center text-sm text-slate-400">
+            <div className="py-12 text-center text-sm text-muted-foreground">
               No exceptions — all clear
             </div>
           )}

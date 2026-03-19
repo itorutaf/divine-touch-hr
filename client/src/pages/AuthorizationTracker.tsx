@@ -37,7 +37,7 @@ export default function AuthorizationTracker() {
           <StatCard title="Expiring < 30 Days" value="1" icon={Clock} accentColor="red" />
         </div>
 
-        <Card className="bg-white shadow-sm overflow-hidden">
+        <Card className="bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -58,8 +58,8 @@ export default function AuthorizationTracker() {
                 return (
                   <TableRow key={a.id}>
                     <TableCell className="font-medium text-sm">{a.client}</TableCell>
-                    <TableCell className="text-sm text-slate-600">{a.mco}</TableCell>
-                    <TableCell className="text-sm text-slate-600">{a.serviceType}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{a.mco}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{a.serviceType}</TableCell>
                     <TableCell className="text-right tabular-nums font-medium">{a.authHours}</TableCell>
                     <TableCell className="text-right tabular-nums">{a.deliveredHours}</TableCell>
                     <TableCell>
@@ -72,16 +72,16 @@ export default function AuthorizationTracker() {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs text-slate-500">
+                    <TableCell className="text-xs text-muted-foreground">
                       {a.startDate} — {a.endDate}
                     </TableCell>
                     <TableCell>
                       {a.daysUntilExpiry <= 30 ? (
-                        <Badge className="bg-red-50 text-red-700 border-red-200 text-[10px]">{a.daysUntilExpiry}d</Badge>
+                        <Badge className="bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20 text-[10px]">{a.daysUntilExpiry}d</Badge>
                       ) : a.daysUntilExpiry <= 60 ? (
-                        <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[10px]">{a.daysUntilExpiry}d</Badge>
+                        <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-[10px]">{a.daysUntilExpiry}d</Badge>
                       ) : (
-                        <span className="text-xs text-slate-400">{a.daysUntilExpiry}d</span>
+                        <span className="text-xs text-muted-foreground">{a.daysUntilExpiry}d</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
