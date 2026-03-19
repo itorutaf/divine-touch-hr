@@ -154,6 +154,23 @@
   --sidebar-primary-foreground: #000000;
 }
 
+/* Display density modifiers */
+.density-compact {
+  font-size: 13px;
+  --spacing-unit: 0.75;
+}
+.density-compact .p-6 { padding: 1rem; }
+.density-compact .gap-4 { gap: 0.75rem; }
+.density-compact .py-3\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+.density-compact .h-14 { height: 3rem; }
+
+.density-comfortable {
+  font-size: 15px;
+}
+.density-comfortable .p-6 { padding: 2rem; }
+.density-comfortable .gap-4 { gap: 1.25rem; }
+.density-comfortable .h-14 { height: 4rem; }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

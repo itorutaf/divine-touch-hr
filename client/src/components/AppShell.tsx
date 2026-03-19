@@ -36,6 +36,7 @@ import { type ReactNode, useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import CommandSearch from "./CommandSearch";
+import { useAppSettings } from "@/contexts/AppSettingsContext";
 
 // ── Module icon mapping ──────────────────────────────────────────────
 
@@ -62,6 +63,8 @@ type AppShellProps = {
 
 export default function AppShell({ children, title, actions }: AppShellProps) {
   const { loading, user } = useAuth();
+  const { sidebarPosition } = useAppSettings();
+  const sidebarRight = sidebarPosition === "right";
 
   if (loading) {
     return <DashboardLayoutSkeleton />;
@@ -73,7 +76,7 @@ export default function AppShell({ children, title, actions }: AppShellProps) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50/50">
+    <div className={`flex h-screen overflow-hidden bg-background ${sidebarRight ? "flex-row-reverse" : ""}`}>
       <AppShellSidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AppShellTopBar title={title} actions={actions} />
@@ -214,10 +217,10 @@ function AppShellSidebar() {
       </div>
 
       {/* ── Sub-nav Panel ────────────────────────── */}
-      <div className="w-[180px] bg-white border-r border-slate-200 flex flex-col">
+      <div className="w-[180px] bg-card border-r border-border flex flex-col">
         {/* Module title */}
-        <div className="h-14 flex items-center px-4 border-b border-slate-100">
-          <span className="text-[13px] font-semibold text-slate-900 tracking-tight">
+        <div className="h-14 flex items-center px-4 border-b border-border">
+          <span className="text-[13px] font-semibold text-foreground tracking-tight">
             {selectedModule}
           </span>
         </div>
@@ -236,12 +239,12 @@ function AppShellSidebar() {
                 className={`
                   w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-colors text-left
                   ${isActive
-                    ? "bg-emerald-50 text-emerald-700 font-medium"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                   }
                 `}
               >
-                <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-600" : "text-slate-400"}`} />
+                <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
                 <span className="truncate">{item.label}</span>
               </button>
             );
@@ -266,8 +269,8 @@ function AppShellTopBar({ title, actions }: { title?: string; actions?: ReactNod
   const pageTitle = title || activeItem?.label || "Dashboard";
 
   return (
-    <div className="h-14 flex items-center justify-between border-b bg-white px-5 shrink-0">
-      <h1 className="text-[15px] font-semibold text-slate-900 tracking-tight">
+    <div className="h-14 flex items-center justify-between border-b border-border bg-card px-5 shrink-0">
+      <h1 className="text-[15px] font-semibold text-foreground tracking-tight">
         {pageTitle}
       </h1>
 
@@ -281,11 +284,11 @@ function AppShellTopBar({ title, actions }: { title?: string; actions?: ReactNod
               new KeyboardEvent("keydown", { key: "k", metaKey: true })
             );
           }}
-          className="hidden md:flex items-center gap-2 text-muted-foreground h-8 px-2.5 text-xs border border-slate-200 bg-slate-50/50 hover:bg-slate-100"
+          className="hidden md:flex items-center gap-2 text-muted-foreground h-8 px-2.5 text-xs border border-border bg-muted/50 hover:bg-muted"
         >
           <Search className="h-3.5 w-3.5" />
           <span>Search</span>
-          <kbd className="pointer-events-none hidden md:inline-flex h-5 items-center gap-0.5 rounded border bg-slate-100 px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+          <kbd className="pointer-events-none hidden md:inline-flex h-5 items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
             <span className="text-[11px]">⌘</span>K
           </kbd>
         </Button>
