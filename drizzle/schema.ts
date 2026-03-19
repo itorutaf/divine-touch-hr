@@ -311,7 +311,13 @@ export type InsertEmployeeDocument = typeof employeeDocuments.$inferInsert;
 
 
 /**
- * Notification settings for document expiration alerts
+ * Notification settings for document expiration alerts.
+ *
+ * NOTE: This table is global (no userId column) — a single row governs
+ * preferences for the entire agency. This is intentional for small-agency
+ * use (Divine Touch). If per-user preferences are needed in the future,
+ * add a `userId` FK column and update getNotificationSettings() to accept
+ * a user ID parameter. That will require a DB migration.
  */
 export const notificationSettings = mysqlTable("notification_settings", {
   id: int("id").autoincrement().primaryKey(),

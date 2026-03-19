@@ -94,7 +94,9 @@ function formatDocumentLine(doc: ExpiringDocument): string {
 /**
  * Build notification content for expiring documents
  */
-function buildNotificationContent(result: ExpirationCheckResult, settings: any): { title: string; content: string } | null {
+type NotificationSeverity = "info" | "warning" | "critical";
+
+function buildNotificationContent(result: ExpirationCheckResult, settings: any): { title: string; content: string; severity: NotificationSeverity } | null {
   const sections: string[] = [];
   
   if (settings?.alertThresholdExpired && result.expired.length > 0) {
@@ -118,10 +120,17 @@ function buildNotificationContent(result: ExpirationCheckResult, settings: any):
   }
   
   const totalCount = result.expired.length + result.expiring7Day.length + result.expiring14Day.length + result.expiring30Day.length;
-  
+
+  // Derive severity from the most urgent threshold present:
+  //   expired → critical (triggers SMS), 7/14-day → warning (email + in-app), 30-day only → info
+  let severity: NotificationSeverity = "info";
+  if (result.expiring7Day.length > 0 || result.expiring14Day.length > 0) severity = "warning";
+  if (result.expired.length > 0) severity = "critical";
+
   return {
     title: `📋 Divine Touch HR: ${totalCount} Document${totalCount !== 1 ? "s" : ""} Require Attention`,
     content: `Document Expiration Alert\n\n${sections.join("\n\n")}\n\nPlease review these documents in the HR system and take appropriate action.`,
+    severity,
   };
 }
 

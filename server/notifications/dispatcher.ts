@@ -19,6 +19,7 @@ import { deliverTwilio } from "./transports/twilio";
 import { getDb } from "../db";
 import { users } from "../../drizzle/schema";
 import { inArray } from "drizzle-orm";
+import { getNotificationSettings } from "../db";
 
 const SEVERITY_RANK: Record<NotificationSeverity, number> = {
   info: 0,
@@ -47,6 +48,46 @@ async function resolveTargetUsers(event: NotificationEvent): Promise<number[]> {
 }
 
 /**
+ * Map event categories to notificationSettings fields.
+ * Returns the settings key that controls whether this category is enabled,
+ * or undefined if no preference governs this category (always deliver).
+ */
+function categoryToSettingsKey(
+  category: string
+): "monitorClearances" | "monitorCertifications" | "monitorLicenses" | "monitorMedical" | undefined {
+  switch (category) {
+    case "compliance":
+    case "clearance":
+      return "monitorClearances";
+    case "certification":
+      return "monitorCertifications";
+    case "license":
+      return "monitorLicenses";
+    case "medical":
+      return "monitorMedical";
+    default:
+      return undefined; // no preference gate — always deliver
+  }
+}
+
+/**
+ * Check whether the notification should be delivered based on saved preferences.
+ * Critical-severity events always bypass preference checks.
+ */
+async function isEnabledByPreferences(event: NotificationEvent): Promise<boolean> {
+  // Critical events always get delivered regardless of preferences
+  if (event.severity === "critical") return true;
+
+  const settingsKey = categoryToSettingsKey(event.category);
+  if (!settingsKey) return true; // no preference governs this category
+
+  const settings = await getNotificationSettings();
+  if (!settings) return true; // no settings row → default to enabled
+
+  return settings[settingsKey] !== false;
+}
+
+/**
  * Main dispatch function — routes a notification event to appropriate transports.
  *
  * @param event - The notification event to deliver
@@ -61,6 +102,15 @@ export async function dispatch(event: NotificationEvent): Promise<DeliveryResult
 
   if (resolvedUserIds.length === 0) {
     console.warn(`[Dispatcher] No target users for event "${event.type}" — skipping`);
+    return results;
+  }
+
+  // Check notification preferences (critical severity always bypasses)
+  const enabled = await isEnabledByPreferences(event);
+  if (!enabled) {
+    console.log(
+      `[Dispatcher] Event "${event.type}" (category=${event.category}) suppressed by notification preferences`
+    );
     return results;
   }
 

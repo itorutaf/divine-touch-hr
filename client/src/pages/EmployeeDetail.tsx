@@ -32,7 +32,8 @@ import { toast } from "sonner";
 import {
   Users, TrendingUp, ClipboardCheck, AlertTriangle, Clock,
   ArrowLeft, User, FileText, Shield, Briefcase, CheckCircle2,
-  XCircle, History, ExternalLink, Edit2, Save, Send, Loader2, Ban, PenTool
+  XCircle, History, ExternalLink, Edit2, Save, Send, Loader2, Ban, PenTool,
+  Upload, Info
 } from "lucide-react";
 import DocumentUpload from "@/components/DocumentUpload";
 import DocumentList from "@/components/DocumentList";
@@ -68,6 +69,9 @@ function DocuSignPacketsCard({ employee, employeeId, onRefresh, isHR }: {
   onRefresh: () => void;
   isHR: boolean;
 }) {
+  const utils = trpc.useUtils();
+  const [signingEnvelopeId, setSigningEnvelopeId] = useState<string | null>(null);
+
   const sendPacket = trpc.docusign.sendPacket.useMutation({
     onSuccess: (data) => {
       toast.success(`Packet sent — envelope ${(data as any)?.envelopeId || ""}`);
@@ -140,12 +144,27 @@ function DocuSignPacketsCard({ employee, employeeId, onRefresh, isHR }: {
                   size="sm"
                   variant="outline"
                   className="h-7 text-xs"
-                  onClick={() => {
-                    // Open signing URL in new tab
-                    window.open(`/api/docusign/sign?envelopeId=${envelopeId}&employeeId=${employeeId}`, "_blank");
+                  disabled={signingEnvelopeId === envelopeId}
+                  onClick={async () => {
+                    try {
+                      setSigningEnvelopeId(envelopeId);
+                      const result = await utils.docusign.getSigningUrl.fetch({
+                        envelopeId: envelopeId!,
+                        employeeId,
+                      });
+                      if (result?.url) {
+                        window.open(result.url, "_blank");
+                      } else {
+                        toast.error("Could not retrieve signing URL");
+                      }
+                    } catch (err: any) {
+                      toast.error(err?.message || "Failed to get signing URL");
+                    } finally {
+                      setSigningEnvelopeId(null);
+                    }
                   }}
                 >
-                  <PenTool className="h-3.5 w-3.5 mr-1" />
+                  {signingEnvelopeId === envelopeId ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <PenTool className="h-3.5 w-3.5 mr-1" />}
                   Preview / Sign
                 </Button>
                 <Button
@@ -213,6 +232,430 @@ function DocuSignPacketsCard({ employee, employeeId, onRefresh, isHR }: {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+// ── Clearance initiation workflow data ──
+const CLEARANCE_CONFIG: Array<{
+  key: string;
+  label: string;
+  clearanceType: "PA_PATCH" | "FBI" | "CHILDLINE";
+  receivedField: "patchReceived" | "fbiReceived" | "childAbuseReceived";
+  dateField: "patchDate" | "fbiDate" | "childAbuseDate";
+  docCategory: string;
+  dialogTitle: string;
+  portalUrl: string;
+  serviceCode?: string;
+  instructions: string;
+}> = [
+  {
+    key: "patch",
+    label: "PA PATCH",
+    clearanceType: "PA_PATCH",
+    receivedField: "patchReceived",
+    dateField: "patchDate",
+    docCategory: "clearance_patch",
+    dialogTitle: "PA State Police Criminal Record Check (PATCH)",
+    portalUrl: "https://epatch.pa.gov",
+    instructions: "The employee (or HR on their behalf) must submit a request through the PA PATCH portal. Results are typically returned within 2-4 weeks. A processing fee applies.",
+  },
+  {
+    key: "fbi",
+    label: "FBI",
+    clearanceType: "FBI",
+    receivedField: "fbiReceived",
+    dateField: "fbiDate",
+    docCategory: "clearance_fbi",
+    dialogTitle: "FBI Fingerprint-Based Background Check",
+    portalUrl: "https://uenroll.identogo.com/workflows/1KG756",
+    serviceCode: "1KG756",
+    instructions: "The employee must complete fingerprinting at an IdentoGO location. Results are typically returned within 2-3 weeks.",
+  },
+  {
+    key: "childAbuse",
+    label: "ChildLine",
+    clearanceType: "CHILDLINE",
+    receivedField: "childAbuseReceived",
+    dateField: "childAbuseDate",
+    docCategory: "clearance_child_abuse",
+    dialogTitle: "PA Child Abuse History Clearance (ChildLine)",
+    portalUrl: "https://www.compass.state.pa.us/cwis/public/home",
+    instructions: "The employee must create an account on the CWIS portal and submit a clearance application. Results are typically returned within 2-4 weeks.",
+  },
+];
+
+function ClearanceInlineUpload({ employeeId, category, onUploadComplete }: {
+  employeeId: number;
+  category: string;
+  onUploadComplete: () => void;
+}) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = { current: null as HTMLInputElement | null };
+
+  const uploadMutation = trpc.documents.upload.useMutation({
+    onSuccess: () => {
+      toast.success("Certificate uploaded successfully");
+      setSelectedFile(null);
+      onUploadComplete();
+    },
+    onError: (error: any) => {
+      toast.error(`Upload failed: ${error.message}`);
+      setUploading(false);
+    },
+  });
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast.error("File size must be less than 10MB");
+        return;
+      }
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/gif",
+        "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Only PDF, images, and Word documents are allowed");
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        const base64Data = base64.split(",")[1];
+        const timestamp = Date.now();
+        const ext = selectedFile.name.split(".").pop();
+        const fileName = `${employeeId}/${category}/${timestamp}.${ext}`;
+
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName, fileData: base64Data, mimeType: selectedFile.type }),
+        });
+        if (!response.ok) throw new Error("Failed to upload file to storage");
+        const { key, url } = await response.json();
+
+        await uploadMutation.mutateAsync({
+          employeeId,
+          fileName: key,
+          originalFileName: selectedFile.name,
+          fileSize: selectedFile.size,
+          mimeType: selectedFile.type,
+          s3Key: key,
+          s3Url: url,
+          category: category as any,
+          expirationDate: undefined,
+        });
+        setUploading(false);
+      };
+      reader.onerror = () => {
+        toast.error("Failed to read file");
+        setUploading(false);
+      };
+      reader.readAsDataURL(selectedFile);
+    } catch {
+      toast.error("Upload failed");
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="mt-2 flex items-center gap-2 p-2 rounded border border-dashed border-slate-300 bg-slate-50">
+      <Upload className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+      <input
+        ref={(el) => { fileInputRef.current = el; }}
+        type="file"
+        className="hidden"
+        accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx"
+        onChange={handleFileSelect}
+      />
+      {selectedFile ? (
+        <>
+          <span className="text-sm truncate flex-1">{selectedFile.name}</span>
+          <Button size="sm" variant="ghost" onClick={() => setSelectedFile(null)} className="h-7 px-2">
+            <XCircle className="h-3 w-3" />
+          </Button>
+          <Button size="sm" onClick={handleUpload} disabled={uploading} className="h-7 bg-emerald-600 hover:bg-emerald-700">
+            {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Upload"}
+          </Button>
+        </>
+      ) : (
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Upload certificate when received
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ClearancesTabContent({ employee, employeeId, user, refetch, refetchDocuments }: {
+  employee: any;
+  employeeId: number;
+  user: any;
+  refetch: () => void;
+  refetchDocuments: () => void;
+}) {
+  const [openDialog, setOpenDialog] = useState<string | null>(null);
+  const [initiatingType, setInitiatingType] = useState<string | null>(null);
+
+  const isHR = user?.role === "admin" || user?.role === "hr";
+
+  const initiateMutation = trpc.checkr.initiate.useMutation({
+    onSuccess: (_, variables) => {
+      toast.success(`${variables.clearanceType} clearance check initiated successfully`);
+      setInitiatingType(null);
+      refetch();
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to initiate: ${error.message}`);
+      setInitiatingType(null);
+    },
+  });
+
+  const handleInitiate = (clearanceType: "PA_PATCH" | "FBI" | "CHILDLINE") => {
+    setInitiatingType(clearanceType);
+    initiateMutation.mutate({ employeeId, clearanceType });
+  };
+
+  const handleSendInstructions = (clearanceType: "PA_PATCH" | "FBI" | "CHILDLINE") => {
+    setInitiatingType(clearanceType);
+    initiateMutation.mutate({ employeeId, clearanceType });
+    setOpenDialog(null);
+  };
+
+  return (
+    <div className="grid md:grid-cols-2 gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Background Clearances</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {CLEARANCE_CONFIG.map((cfg) => {
+            const received = employee[cfg.receivedField];
+            const date = employee[cfg.dateField];
+            const isPending = !received;
+
+            return (
+              <div key={cfg.key}>
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    {received ? (
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                    ) : (
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                    )}
+                    <div>
+                      <p className="font-medium">{cfg.label}</p>
+                      {date && (
+                        <p className="text-sm text-muted-foreground">
+                          Received: {new Date(date).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className={received ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
+                      {received ? "Received" : "Pending"}
+                    </Badge>
+                    {isPending && isHR && (
+                      <Dialog open={openDialog === cfg.key} onOpenChange={(open) => setOpenDialog(open ? cfg.key : null)}>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="h-7 text-xs">
+                            {initiatingType === cfg.clearanceType ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : (
+                              <Send className="h-3 w-3 mr-1" />
+                            )}
+                            Initiate
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-lg">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <Shield className="h-5 w-5" />
+                              {cfg.dialogTitle}
+                            </DialogTitle>
+                            <DialogDescription>
+                              Initiate this clearance check for {employee.firstName} {employee.lastName}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 py-2">
+                            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                <p className="text-sm text-blue-900">{cfg.instructions}</p>
+                              </div>
+                              {cfg.serviceCode && (
+                                <div className="flex items-center gap-2 pt-1">
+                                  <span className="text-xs font-medium text-blue-700">IdentoGO Service Code:</span>
+                                  <code className="px-2 py-0.5 bg-blue-100 rounded text-sm font-mono font-bold text-blue-900">{cfg.serviceCode}</code>
+                                </div>
+                              )}
+                              <div className="pt-1">
+                                <a
+                                  href={cfg.portalUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:text-blue-900 underline"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  Open Portal
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                          <DialogFooter className="gap-2 sm:gap-0">
+                            <Button variant="outline" onClick={() => setOpenDialog(null)}>
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={() => handleInitiate(cfg.clearanceType as "PA_PATCH" | "FBI" | "CHILDLINE")}
+                              disabled={initiatingType === cfg.clearanceType}
+                              className="bg-emerald-600 hover:bg-emerald-700"
+                            >
+                              {initiatingType === cfg.clearanceType ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <Shield className="h-4 w-4 mr-2" />
+                              )}
+                              Initiate Only
+                            </Button>
+                            <Button
+                              onClick={() => handleSendInstructions(cfg.clearanceType as "PA_PATCH" | "FBI" | "CHILDLINE")}
+                              disabled={initiatingType === cfg.clearanceType}
+                            >
+                              {initiatingType === cfg.clearanceType ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <Send className="h-4 w-4 mr-2" />
+                              )}
+                              Send Instructions to Employee
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
+                </div>
+                {/* Inline certificate upload for pending clearances */}
+                {isPending && isHR && (
+                  <ClearanceInlineUpload
+                    employeeId={employeeId}
+                    category={cfg.docCategory}
+                    onUploadComplete={() => { refetch(); refetchDocuments(); }}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Certifications & Verifications</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-lg border">
+            <div className="flex items-center gap-3">
+              {employee.i9Complete ? (
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              ) : (
+                <Clock className="h-5 w-5 text-muted-foreground" />
+              )}
+              <div>
+                <p className="font-medium">I-9 Verification</p>
+                {employee.i9VerifiedBy && (
+                  <p className="text-sm text-muted-foreground">
+                    Verified by {employee.i9VerifiedBy}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Badge className={employee.i9Complete ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
+              {employee.i9Complete ? "Complete" : "Pending"}
+            </Badge>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg border">
+            <div className="flex items-center gap-3">
+              {employee.physicalTbComplete ? (
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              ) : (
+                <Clock className="h-5 w-5 text-muted-foreground" />
+              )}
+              <div>
+                <p className="font-medium">Physical / TB Test</p>
+                {employee.physicalTbDate && (
+                  <p className="text-sm text-muted-foreground">
+                    Completed: {new Date(employee.physicalTbDate).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Badge className={employee.physicalTbComplete ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
+              {employee.physicalTbComplete ? "Complete" : "Pending"}
+            </Badge>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg border">
+            <div className="flex items-center gap-3">
+              {employee.cprComplete ? (
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              ) : (
+                <Clock className="h-5 w-5 text-muted-foreground" />
+              )}
+              <div>
+                <p className="font-medium">CPR Certification</p>
+                {employee.cprExpDate && (
+                  <p className="text-sm text-muted-foreground">
+                    Expires: {new Date(employee.cprExpDate).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Badge className={employee.cprComplete ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
+              {employee.cprComplete ? "Complete" : "Pending"}
+            </Badge>
+          </div>
+
+          {employee.serviceLine === "Skilled" && (
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center gap-3">
+                {employee.licenseVerified ? (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                ) : (
+                  <Clock className="h-5 w-5 text-muted-foreground" />
+                )}
+                <div>
+                  <p className="font-medium">Professional License</p>
+                  {employee.licenseNumber && (
+                    <p className="text-sm text-muted-foreground">
+                      #{employee.licenseNumber} - Exp: {employee.licenseExpDate ? new Date(employee.licenseExpDate).toLocaleDateString() : "N/A"}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Badge className={employee.licenseVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
+                {employee.licenseVerified ? "Verified" : "Pending"}
+              </Badge>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -684,134 +1127,7 @@ export default function EmployeeDetail() {
 
           {/* Clearances Tab */}
           <TabsContent value="clearances">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Background Clearances</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { label: "PATCH", received: employee.patchReceived, date: employee.patchDate },
-                    { label: "FBI", received: employee.fbiReceived, date: employee.fbiDate },
-                    { label: "Child Abuse", received: employee.childAbuseReceived, date: employee.childAbuseDate },
-                  ].map(clearance => (
-                    <div key={clearance.label} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        {clearance.received ? (
-                          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                        ) : (
-                          <Clock className="h-5 w-5 text-muted-foreground" />
-                        )}
-                        <div>
-                          <p className="font-medium">{clearance.label}</p>
-                          {clearance.date && (
-                            <p className="text-sm text-muted-foreground">
-                              Received: {new Date(clearance.date).toLocaleDateString()}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <Badge className={clearance.received ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
-                        {clearance.received ? "Received" : "Pending"}
-                      </Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Certifications & Verifications</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      {employee.i9Complete ? (
-                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                      ) : (
-                        <Clock className="h-5 w-5 text-muted-foreground" />
-                      )}
-                      <div>
-                        <p className="font-medium">I-9 Verification</p>
-                        {employee.i9VerifiedBy && (
-                          <p className="text-sm text-muted-foreground">
-                            Verified by {employee.i9VerifiedBy}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Badge className={employee.i9Complete ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
-                      {employee.i9Complete ? "Complete" : "Pending"}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      {employee.physicalTbComplete ? (
-                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                      ) : (
-                        <Clock className="h-5 w-5 text-muted-foreground" />
-                      )}
-                      <div>
-                        <p className="font-medium">Physical / TB Test</p>
-                        {employee.physicalTbDate && (
-                          <p className="text-sm text-muted-foreground">
-                            Completed: {new Date(employee.physicalTbDate).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Badge className={employee.physicalTbComplete ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
-                      {employee.physicalTbComplete ? "Complete" : "Pending"}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      {employee.cprComplete ? (
-                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                      ) : (
-                        <Clock className="h-5 w-5 text-muted-foreground" />
-                      )}
-                      <div>
-                        <p className="font-medium">CPR Certification</p>
-                        {employee.cprExpDate && (
-                          <p className="text-sm text-muted-foreground">
-                            Expires: {new Date(employee.cprExpDate).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Badge className={employee.cprComplete ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
-                      {employee.cprComplete ? "Complete" : "Pending"}
-                    </Badge>
-                  </div>
-
-                  {employee.serviceLine === "Skilled" && (
-                    <div className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        {employee.licenseVerified ? (
-                          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                        ) : (
-                          <Clock className="h-5 w-5 text-muted-foreground" />
-                        )}
-                        <div>
-                          <p className="font-medium">Professional License</p>
-                          {employee.licenseNumber && (
-                            <p className="text-sm text-muted-foreground">
-                              #{employee.licenseNumber} - Exp: {employee.licenseExpDate ? new Date(employee.licenseExpDate).toLocaleDateString() : "N/A"}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <Badge className={employee.licenseVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
-                        {employee.licenseVerified ? "Verified" : "Pending"}
-                      </Badge>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+            <ClearancesTabContent employee={employee} employeeId={employeeId} user={user} refetch={refetch} refetchDocuments={refetchDocuments} />
           </TabsContent>
 
           {/* History Tab */}
