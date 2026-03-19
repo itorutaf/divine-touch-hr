@@ -17,6 +17,10 @@ import {
   clients, InsertClient, Client,
   authorizations, InsertAuthorization, Authorization,
   profitabilitySnapshots, InsertProfitabilitySnapshot,
+  inAppNotifications, InsertInAppNotification, InAppNotification,
+  integrationConfigs, InsertIntegrationConfig, IntegrationConfig,
+  clearances, InsertClearance, Clearance,
+  exclusionScreenings, InsertExclusionScreening, ExclusionScreening,
 } from "../drizzle/schema";
 import { nanoid } from 'nanoid';
 
@@ -1194,4 +1198,220 @@ export async function getSnapshotsByClientId(clientId: number) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(profitabilitySnapshots).where(eq(profitabilitySnapshots.clientId, clientId)).orderBy(desc(profitabilitySnapshots.createdAt));
+}
+
+
+// ============ EMPLOYEE LOOKUP BY ENVELOPE/CANDIDATE ID ============
+
+export async function getEmployeeByEnvelopeId(envelopeId: string): Promise<Employee | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(employees)
+    .where(or(
+      eq(employees.dsPacket1EnvelopeId, envelopeId),
+      eq(employees.dsPacket2EnvelopeId, envelopeId)
+    ))
+    .limit(1);
+  return result[0];
+}
+
+export async function getClearanceByCheckrCandidateId(candidateId: string): Promise<{ clearance: Clearance; employee: Employee } | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select({
+    clearance: clearances,
+    employee: employees,
+  })
+  .from(clearances)
+  .innerJoin(employees, eq(clearances.employeeId, employees.id))
+  .where(eq(clearances.checkrCandidateId, candidateId))
+  .limit(1);
+  return result[0];
+}
+
+// ============ IN-APP NOTIFICATION QUERIES ============
+
+export async function getInAppNotifications(userId: number, options?: { limit?: number; offset?: number; unreadOnly?: boolean }): Promise<InAppNotification[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const limit = options?.limit || 30;
+  const offset = options?.offset || 0;
+
+  const conditions = [eq(inAppNotifications.userId, userId)];
+  if (options?.unreadOnly) {
+    conditions.push(eq(inAppNotifications.read, false));
+  }
+
+  return db.select()
+    .from(inAppNotifications)
+    .where(and(...conditions))
+    .orderBy(desc(inAppNotifications.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function getUnreadNotificationCount(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(inAppNotifications)
+    .where(and(
+      eq(inAppNotifications.userId, userId),
+      eq(inAppNotifications.read, false)
+    ));
+  return result[0]?.count || 0;
+}
+
+export async function markNotificationRead(notificationId: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(inAppNotifications)
+    .set({ read: true })
+    .where(and(
+      eq(inAppNotifications.id, notificationId),
+      eq(inAppNotifications.userId, userId)
+    ));
+}
+
+export async function markAllNotificationsRead(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(inAppNotifications)
+    .set({ read: true })
+    .where(and(
+      eq(inAppNotifications.userId, userId),
+      eq(inAppNotifications.read, false)
+    ));
+}
+
+export async function deleteOldNotifications(daysOld: number = 90): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - daysOld);
+  const result = await db.delete(inAppNotifications)
+    .where(sql`${inAppNotifications.createdAt} < ${cutoff}`);
+  return (result as any)[0]?.affectedRows || 0;
+}
+
+
+// ============ INTEGRATION CONFIG QUERIES ============
+
+export async function getIntegrationConfig(provider: string): Promise<IntegrationConfig | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(integrationConfigs)
+    .where(eq(integrationConfigs.provider, provider as any))
+    .limit(1);
+  return result[0];
+}
+
+export async function getAllIntegrationConfigs(): Promise<IntegrationConfig[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(integrationConfigs).orderBy(asc(integrationConfigs.provider));
+}
+
+export async function upsertIntegrationConfig(provider: string, data: Partial<InsertIntegrationConfig>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const existing = await getIntegrationConfig(provider);
+  if (existing) {
+    await db.update(integrationConfigs).set(data).where(eq(integrationConfigs.id, existing.id));
+  } else {
+    await db.insert(integrationConfigs).values({ provider: provider as any, ...data } as InsertIntegrationConfig);
+  }
+}
+
+
+// ============ CLEARANCE QUERIES ============
+
+export async function getClearancesForEmployee(employeeId: number): Promise<Clearance[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(clearances)
+    .where(eq(clearances.employeeId, employeeId))
+    .orderBy(desc(clearances.createdAt));
+}
+
+export async function createClearance(data: InsertClearance): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(clearances).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function updateClearance(id: number, data: Partial<InsertClearance>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(clearances).set(data).where(eq(clearances.id, id));
+}
+
+export async function getExpiringClearances(daysThreshold: number): Promise<any[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const thresholdDate = new Date();
+  thresholdDate.setDate(thresholdDate.getDate() + daysThreshold);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return db.select({
+    clearance: clearances,
+    employee: {
+      id: employees.id,
+      legalFirstName: employees.legalFirstName,
+      legalLastName: employees.legalLastName,
+      email: employees.email,
+      employeeId: employees.employeeId,
+    }
+  })
+  .from(clearances)
+  .innerJoin(employees, eq(clearances.employeeId, employees.id))
+  .where(
+    and(
+      sql`${clearances.expirationDate} IS NOT NULL`,
+      sql`${clearances.expirationDate} <= ${thresholdDate}`,
+      sql`${clearances.expirationDate} >= ${today}`,
+      eq(clearances.status, "clear")
+    )
+  )
+  .orderBy(asc(clearances.expirationDate));
+}
+
+
+// ============ EXCLUSION SCREENING QUERIES ============
+
+export async function getExclusionScreenings(options?: { employeeId?: number; limit?: number }): Promise<ExclusionScreening[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const conditions = [];
+  if (options?.employeeId) {
+    conditions.push(eq(exclusionScreenings.employeeId, options.employeeId));
+  }
+
+  const query = conditions.length > 0
+    ? db.select().from(exclusionScreenings).where(and(...conditions))
+    : db.select().from(exclusionScreenings);
+
+  return query.orderBy(desc(exclusionScreenings.createdAt)).limit(options?.limit || 100);
+}
+
+export async function createExclusionScreening(data: InsertExclusionScreening): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(exclusionScreenings).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function resolveExclusionScreening(id: number, resolvedBy: number, notes: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(exclusionScreenings).set({
+    resolvedAt: new Date(),
+    resolvedBy,
+    notes,
+  }).where(eq(exclusionScreenings.id, id));
 }

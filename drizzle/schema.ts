@@ -1010,3 +1010,46 @@ export const exclusionScreenings = mysqlTable("exclusion_screenings", {
 
 export type ExclusionScreening = typeof exclusionScreenings.$inferSelect;
 export type InsertExclusionScreening = typeof exclusionScreenings.$inferInsert;
+
+/**
+ * In-app notifications — powers the bell icon feed
+ * Each row = one notification for one user (fan-out model)
+ */
+export const inAppNotifications = mysqlTable("in_app_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  body: text("body").notNull(),
+  category: mysqlEnum("notifCategory", [
+    "intake", "compliance", "billing", "scheduling", "system"
+  ]).default("system").notNull(),
+  severity: mysqlEnum("notifSeverity", ["info", "warning", "critical"]).default("info").notNull(),
+  read: boolean("read").default(false).notNull(),
+  actionUrl: varchar("actionUrl", { length: 512 }),
+  metadata: text("metadata"), // JSON blob for extra context
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type InAppNotification = typeof inAppNotifications.$inferSelect;
+export type InsertInAppNotification = typeof inAppNotifications.$inferInsert;
+
+/**
+ * Integration configurations — stores API keys, field mappings, and connection
+ * state for each external provider (JotForm, DocuSign, Checkr, etc.)
+ */
+export const integrationConfigs = mysqlTable("integration_configs", {
+  id: int("id").autoincrement().primaryKey(),
+  provider: mysqlEnum("provider", [
+    "jotform", "docusign", "checkr", "sam_gov", "hha_exchange",
+    "nevvon", "gusto", "twilio", "ses"
+  ]).notNull(),
+  isActive: boolean("isActive").default(false).notNull(),
+  configJson: text("configJson"), // JSON — encrypted at rest via app layer
+  lastSyncAt: timestamp("lastSyncAt"),
+  lastError: text("lastError"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type IntegrationConfig = typeof integrationConfigs.$inferSelect;
+export type InsertIntegrationConfig = typeof integrationConfigs.$inferInsert;

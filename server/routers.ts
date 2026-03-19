@@ -654,6 +654,191 @@ export const appRouter = router({
       const { runExpirationCheck } = await import("./notificationService");
       return runExpirationCheck();
     }),
+
+    // In-app notification bell endpoints
+    inApp: router({
+      list: protectedProcedure
+        .input(z.object({
+          limit: z.number().min(1).max(100).optional(),
+          offset: z.number().min(0).optional(),
+          unreadOnly: z.boolean().optional(),
+        }).optional())
+        .query(async ({ ctx, input }) => {
+          return db.getInAppNotifications(ctx.user.id, input);
+        }),
+
+      unreadCount: protectedProcedure.query(async ({ ctx }) => {
+        return db.getUnreadNotificationCount(ctx.user.id);
+      }),
+
+      markRead: protectedProcedure
+        .input(z.object({ notificationId: z.number() }))
+        .mutation(async ({ ctx, input }) => {
+          await db.markNotificationRead(input.notificationId, ctx.user.id);
+          return { success: true };
+        }),
+
+      markAllRead: protectedProcedure.mutation(async ({ ctx }) => {
+        await db.markAllNotificationsRead(ctx.user.id);
+        return { success: true };
+      }),
+    }),
+  }),
+
+  // Clearances
+  clearances: router({
+    getForEmployee: protectedProcedure
+      .input(z.object({ employeeId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getClearancesForEmployee(input.employeeId);
+      }),
+
+    create: hrProcedure
+      .input(z.object({
+        employeeId: z.number(),
+        type: z.enum(["PA_PATCH", "FBI", "CHILDLINE"]),
+        status: z.enum(["not_started", "initiated", "pending", "clear", "flagged", "expired"]).optional(),
+        submissionDate: z.string().optional(),
+        resultDate: z.string().optional(),
+        expirationDate: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createClearance(input as any);
+        return { id };
+      }),
+
+    update: complianceProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["not_started", "initiated", "pending", "clear", "flagged", "expired"]).optional(),
+        resultDate: z.string().optional(),
+        expirationDate: z.string().optional(),
+        certificateS3Key: z.string().optional(),
+        checkrCandidateId: z.string().optional(),
+        checkrReportId: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateClearance(id, data as any);
+        return { success: true };
+      }),
+
+    getExpiring: complianceProcedure
+      .input(z.object({ daysThreshold: z.number().default(60) }))
+      .query(async ({ input }) => {
+        return db.getExpiringClearances(input.daysThreshold);
+      }),
+  }),
+
+  // Exclusion Screenings (LEIE/SAM)
+  exclusions: router({
+    list: complianceProcedure
+      .input(z.object({
+        employeeId: z.number().optional(),
+        limit: z.number().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        return db.getExclusionScreenings(input);
+      }),
+
+    resolve: complianceProcedure
+      .input(z.object({
+        id: z.number(),
+        notes: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.resolveExclusionScreening(input.id, ctx.user.id, input.notes);
+        return { success: true };
+      }),
+
+    runNow: adminProcedure.mutation(async () => {
+      const { runMonthlyScreening } = await import("./integrations/exclusions/orchestrator");
+      return runMonthlyScreening();
+    }),
+  }),
+
+  // Integration Configs
+  integrations: router({
+    list: adminProcedure.query(async () => {
+      return db.getAllIntegrationConfigs();
+    }),
+
+    get: adminProcedure
+      .input(z.object({ provider: z.string() }))
+      .query(async ({ input }) => {
+        return db.getIntegrationConfig(input.provider);
+      }),
+
+    upsert: adminProcedure
+      .input(z.object({
+        provider: z.string(),
+        isActive: z.boolean().optional(),
+        configJson: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { provider, ...data } = input;
+        await db.upsertIntegrationConfig(provider, data);
+        return { success: true };
+      }),
+  }),
+
+  // DocuSign
+  docusign: router({
+    sendPacket: hrProcedure
+      .input(z.object({
+        employeeId: z.number(),
+        packetType: z.enum(["1", "2"]),
+        templateId: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { createEnvelope } = await import("./integrations/docusign/envelopes");
+        return createEnvelope(input.employeeId, Number(input.packetType) as 1 | 2, input.templateId);
+      }),
+
+    getSigningUrl: protectedProcedure
+      .input(z.object({
+        envelopeId: z.string(),
+        employeeId: z.number(),
+        returnUrl: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const { getSigningUrl } = await import("./integrations/docusign/envelopes");
+        const returnUrl = input.returnUrl || `${process.env.APP_URL || "http://localhost:3000"}/employees/${input.employeeId}`;
+        return getSigningUrl(input.envelopeId, input.employeeId, returnUrl);
+      }),
+
+    voidEnvelope: hrProcedure
+      .input(z.object({
+        envelopeId: z.string(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { voidEnvelope } = await import("./integrations/docusign/envelopes");
+        return voidEnvelope(input.envelopeId, input.reason);
+      }),
+  }),
+
+  // Checkr Background Checks
+  checkr: router({
+    initiate: hrProcedure
+      .input(z.object({
+        employeeId: z.number(),
+        clearanceType: z.enum(["PA_PATCH", "FBI", "CHILDLINE"]).default("PA_PATCH"),
+        packageSlug: z.string().default("tasker_standard"),
+      }))
+      .mutation(async ({ input }) => {
+        const { initiateBackgroundCheck } = await import("./integrations/checkr/service");
+        return initiateBackgroundCheck(input.employeeId, input.clearanceType, input.packageSlug);
+      }),
+
+    getStatus: protectedProcedure
+      .input(z.object({ reportId: z.string() }))
+      .query(async ({ input }) => {
+        const { getReport } = await import("./integrations/checkr/client");
+        return getReport(input.reportId);
+      }),
   }),
 
   // Role matrix
@@ -661,13 +846,13 @@ export const appRouter = router({
     list: protectedProcedure.query(async () => {
       return db.getRoleMatrix();
     }),
-    
+
     getRequirements: protectedProcedure
       .input(z.object({ roleName: z.string(), serviceLine: z.enum(["OLTL", "ODP", "Skilled"]) }))
       .query(async ({ input }) => {
         return db.getRoleRequirements(input.roleName, input.serviceLine);
       }),
-    
+
     upsert: adminProcedure
       .input(z.object({
         roleName: z.string(),

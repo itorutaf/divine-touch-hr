@@ -17,7 +17,6 @@ import {
 import { getVisibleSections, type NavSection } from "@/config/navigation";
 import { useIsMobile } from "@/hooks/useMobile";
 import {
-  Bell,
   ChevronsUpDown,
   LogOut,
   Search,
@@ -38,6 +37,7 @@ import { type ReactNode, useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import CommandSearch from "./CommandSearch";
+import NotificationBell from "./NotificationBell";
 import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -318,13 +318,8 @@ function AppShellTopBar({ title, actions }: { title?: string; actions?: ReactNod
           </TooltipContent>
         </Tooltip>
 
-        {/* Notification Bell */}
-        <Button variant="ghost" size="icon" className="h-8 w-8 relative">
-          <Bell className="h-4 w-4 text-muted-foreground" />
-          <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center px-1">
-            3
-          </span>
-        </Button>
+        {/* Notification Bell — wired to real in-app notifications */}
+        <NotificationBell />
 
         {actions && (
           <>

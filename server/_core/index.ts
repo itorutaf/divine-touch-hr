@@ -31,7 +31,16 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
+  // Capture raw body for webhook HMAC signature verification
+  app.use(express.json({
+    limit: "50mb",
+    verify: (req: any, _res, buf) => {
+      // Store raw body buffer on webhook routes for HMAC validation
+      if (req.url?.startsWith("/api/webhooks/")) {
+        req.rawBody = buf.toString("utf-8");
+      }
+    },
+  }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // Auth routes (login, register, logout, me)
   registerAuthRoutes(app);
@@ -92,6 +101,63 @@ async function startServer() {
     } catch (error) {
       console.error("[Cron] Timesheet reminder error:", error);
       res.status(500).json({ error: "Timesheet reminder check failed" });
+    }
+  });
+
+  // ── Phase 2 Integration Webhooks ──────────────────────────────────
+  // These endpoints receive callbacks from external services (JotForm, DocuSign, Checkr)
+  // They use plain Express routes because external services can't call tRPC.
+
+  // JotForm HIPAA — new worker applications
+  app.post("/api/webhooks/jotform", async (req, res) => {
+    try {
+      const { handleJotFormWebhook } = await import("../integrations/jotform/webhook");
+      return handleJotFormWebhook(req, res);
+    } catch (error) {
+      console.error("[Webhook] JotForm handler error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // DocuSign Connect — envelope status changes
+  app.post("/api/webhooks/docusign", async (req, res) => {
+    try {
+      const { handleDocuSignWebhook } = await import("../integrations/docusign/webhook");
+      return handleDocuSignWebhook(req, res);
+    } catch (error) {
+      console.error("[Webhook] DocuSign handler error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Checkr — background check results
+  app.post("/api/webhooks/checkr", async (req, res) => {
+    try {
+      const { handleCheckrWebhook } = await import("../integrations/checkr/webhook");
+      return handleCheckrWebhook(req, res);
+    } catch (error) {
+      console.error("[Webhook] Checkr handler error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Monthly LEIE/SAM exclusion screening (called by cron)
+  app.post("/api/cron/exclusion-screening", async (req, res) => {
+    try {
+      const cronSecret = req.headers["x-cron-secret"];
+      const expectedSecret = process.env.CRON_SECRET || "divine-touch-hr-cron-2024";
+      if (cronSecret !== expectedSecret) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { runMonthlyScreening } = await import("../integrations/exclusions/orchestrator");
+      const result = await runMonthlyScreening();
+
+      console.log(`[Cron] Exclusion screening: ${result.totalScreened} screened, ${result.leieMatches + result.samMatches} matches`);
+      res.json(result);
+    } catch (error) {
+      console.error("[Cron] Exclusion screening error:", error);
+      res.status(500).json({ error: "Screening failed" });
     }
   });
 
