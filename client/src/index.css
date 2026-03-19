@@ -1,6 +1,20 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Rainbow button colors */
+:root {
+  --color-1: 0 100% 63%;
+  --color-2: 270 100% 63%;
+  --color-3: 210 100% 63%;
+  --color-4: 195 100% 63%;
+  --color-5: 90 100% 63%;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0%; }
+  100% { background-position: 200%; }
+}
+
 @keyframes aurora-glow {
   0%, 100% { text-shadow: 0 0 40px rgba(16, 185, 129, 0.5); }
   50% { text-shadow: 0 0 60px rgba(16, 185, 129, 0.7); }
@@ -63,6 +77,7 @@
   --font-mono: var(--font-mono);
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
+  --animate-rainbow: rainbow 2s linear infinite;
 }
 
 :root {

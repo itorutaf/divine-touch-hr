@@ -107,7 +107,8 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Settings",
     group: "settings",
     items: [
-      { label: "Integrations", href: "/settings", icon: Settings },
+      { label: "General", href: "/settings", icon: Settings },
+      { label: "Integrations", href: "/settings/integrations", icon: Settings },
       { label: "Users & Roles", href: "/users/roles", icon: UserCog },
     ],
   },

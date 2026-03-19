@@ -54,6 +54,7 @@ import TrainingCourses from "./pages/TrainingCourses";
 // Settings
 import Users from "./pages/Users";
 import IntegrationSettings from "./pages/IntegrationSettings";
+import GeneralSettings from "./pages/GeneralSettings";
 import RolesOverview from "./pages/RolesOverview";
 
 function Router() {
@@ -109,7 +110,8 @@ function Router() {
       <Route path="/users" component={Users} />
       <Route path="/users/roles" component={RolesOverview} />
       <Route path="/users/roles/:role" component={RolesOverview} />
-      <Route path="/settings" component={IntegrationSettings} />
+      <Route path="/settings" component={GeneralSettings} />
+      <Route path="/settings/integrations" component={IntegrationSettings} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
@@ -120,7 +122,7 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
+      <ThemeProvider defaultTheme="light" switchable>
         <TooltipProvider>
           <Toaster />
           <Router />
