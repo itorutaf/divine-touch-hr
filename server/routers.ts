@@ -1561,6 +1561,176 @@ export const appRouter = router({
       }),
   }),
 
+  // ── Training Module ──────────────────────────────────────────────
+  training: router({
+    list: protectedProcedure
+      .input(z.object({
+        employeeId: z.number().optional(),
+        track: z.enum(["OLTL", "ODP", "Skilled", "ALL"]).optional(),
+        status: z.enum(["assigned", "in_progress", "completed", "expired"]).optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        if (input?.employeeId) {
+          return db.getTrainingRecordsByEmployeeId(input.employeeId);
+        }
+        const all = await db.getAllTrainingRecords();
+        let filtered = all as any[];
+        if (input?.track) filtered = filtered.filter((r: any) => r.trackRequirement === input.track || r.trackRequirement === "ALL");
+        if (input?.status) filtered = filtered.filter((r: any) => r.status === input.status);
+        return filtered;
+      }),
+
+    getStats: protectedProcedure.query(async () => {
+      const allRecords = await db.getAllTrainingRecords();
+      const records = allRecords as any[];
+      // Group by employee to determine compliance
+      const byEmployee: Record<number, { assigned: number; completed: number; overdue: number; name: string }> = {};
+      const now = new Date();
+      for (const r of records) {
+        if (!byEmployee[r.employeeId]) {
+          byEmployee[r.employeeId] = { assigned: 0, completed: 0, overdue: 0, name: `${r.employeeFirstName || ""} ${r.employeeLastName || ""}`.trim() };
+        }
+        byEmployee[r.employeeId].assigned++;
+        if (r.status === "completed") byEmployee[r.employeeId].completed++;
+        if (r.status === "expired" || (r.expirationDate && new Date(r.expirationDate) < now && r.status !== "completed")) {
+          byEmployee[r.employeeId].overdue++;
+        }
+      }
+      const employees = Object.values(byEmployee);
+      const compliant = employees.filter((e) => e.assigned > 0 && e.completed === e.assigned).length;
+      const inProgress = employees.filter((e) => e.completed > 0 && e.completed < e.assigned && e.overdue === 0).length;
+      const overdue = employees.filter((e) => e.overdue > 0).length;
+
+      return {
+        compliant,
+        inProgress,
+        overdue,
+        totalCourses: records.length,
+        totalEmployees: employees.length,
+      };
+    }),
+
+    getWorkerSummaries: protectedProcedure.query(async () => {
+      const allRecords = await db.getAllTrainingRecords();
+      const records = allRecords as any[];
+      const now = new Date();
+      const byEmployee: Record<number, {
+        id: number; name: string; track: string;
+        required: number; completed: number; pending: number; overdue: number;
+        hoursComplete: number; hoursRequired: number;
+      }> = {};
+
+      for (const r of records) {
+        if (!byEmployee[r.employeeId]) {
+          byEmployee[r.employeeId] = {
+            id: r.employeeId,
+            name: `${r.employeeFirstName || ""} ${r.employeeLastName || ""}`.trim(),
+            track: r.trackRequirement || "OLTL",
+            required: 0, completed: 0, pending: 0, overdue: 0,
+            hoursComplete: 0, hoursRequired: 0,
+          };
+        }
+        const emp = byEmployee[r.employeeId];
+        emp.required++;
+        emp.hoursRequired += Number(r.hoursCredit) || 0;
+        if (r.status === "completed") {
+          emp.completed++;
+          emp.hoursComplete += Number(r.hoursCredit) || 0;
+        } else if (r.status === "expired" || (r.expirationDate && new Date(r.expirationDate) < now)) {
+          emp.overdue++;
+        } else {
+          emp.pending++;
+        }
+      }
+      return Object.values(byEmployee);
+    }),
+
+    assign: protectedProcedure
+      .input(z.object({
+        employeeId: z.number(),
+        courseName: z.string().min(1),
+        courseSource: z.enum(["NEVVON", "MYODP", "CUSTOM", "EXTERNAL"]),
+        trackRequirement: z.enum(["OLTL", "ODP", "Skilled", "ALL"]),
+        isInitial: z.boolean(),
+        hoursCredit: z.string().optional(),
+        expirationDate: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return db.createTrainingRecord({
+          ...input,
+          assignedDate: new Date(),
+          hoursCredit: input.hoursCredit || "0",
+          expirationDate: input.expirationDate ? new Date(input.expirationDate) : undefined,
+        } as any);
+      }),
+
+    assignTrack: protectedProcedure
+      .input(z.object({
+        employeeId: z.number(),
+        track: z.enum(["OLTL", "ODP", "Skilled"]),
+      }))
+      .mutation(async ({ input }) => {
+        // Assign all courses for a track to an employee
+        const TRACK_COURSES: Record<string, { course: string; hours: number; initial: boolean; source: string }[]> = {
+          OLTL: [
+            { course: "Body Mechanics", hours: 2, initial: true, source: "NEVVON" },
+            { course: "Nutrition & Meal Prep", hours: 1.5, initial: true, source: "NEVVON" },
+            { course: "Vital Signs", hours: 2, initial: true, source: "NEVVON" },
+            { course: "Emergency Response", hours: 2, initial: true, source: "NEVVON" },
+            { course: "Infection Control", hours: 1.5, initial: true, source: "NEVVON" },
+            { course: "Communication Skills", hours: 1, initial: true, source: "NEVVON" },
+            { course: "HIPAA Compliance", hours: 1, initial: false, source: "CUSTOM" },
+            { course: "Mandated Reporter", hours: 2, initial: false, source: "CUSTOM" },
+            { course: "CPR/First Aid", hours: 4, initial: false, source: "EXTERNAL" },
+          ],
+          ODP: [
+            { course: "Person-Centered Practices", hours: 4, initial: true, source: "MYODP" },
+            { course: "Abuse Prevention", hours: 3, initial: true, source: "MYODP" },
+            { course: "Individual Rights", hours: 2, initial: true, source: "MYODP" },
+            { course: "Incident Reporting", hours: 2, initial: true, source: "MYODP" },
+            { course: "ISP Implementation", hours: 3, initial: true, source: "MYODP" },
+            { course: "HIPAA Compliance", hours: 1, initial: false, source: "CUSTOM" },
+            { course: "CPR/First Aid", hours: 4, initial: false, source: "EXTERNAL" },
+          ],
+          Skilled: [
+            { course: "CE: Clinical Updates", hours: 10, initial: false, source: "EXTERNAL" },
+            { course: "CE: Pharmacology", hours: 5, initial: false, source: "EXTERNAL" },
+            { course: "CE: Ethics", hours: 5, initial: false, source: "EXTERNAL" },
+            { course: "HIPAA Compliance", hours: 1, initial: false, source: "CUSTOM" },
+            { course: "CPR/First Aid", hours: 4, initial: false, source: "EXTERNAL" },
+          ],
+        };
+        const courses = TRACK_COURSES[input.track] || [];
+        const records = courses.map((c) => ({
+          employeeId: input.employeeId,
+          courseName: c.course,
+          courseSource: c.source as any,
+          trackRequirement: input.track as any,
+          isInitial: c.initial,
+          hoursCredit: String(c.hours),
+          assignedDate: new Date(),
+        }));
+        return db.bulkCreateTrainingRecords(records as any[]);
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["assigned", "in_progress", "completed", "expired"]).optional(),
+        completedDate: z.string().optional(),
+        score: z.number().optional(),
+        expirationDate: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, completedDate, expirationDate, ...rest } = input;
+        const data: Record<string, any> = { ...rest };
+        if (completedDate !== undefined) data.completedDate = completedDate ? new Date(completedDate) : null;
+        if (expirationDate !== undefined) data.expirationDate = expirationDate ? new Date(expirationDate) : null;
+        if (input.status === "completed" && !completedDate) data.completedDate = new Date();
+        return db.updateTrainingRecord(id, data);
+      }),
+  }),
+
   // ── Client Management ─────────────────────────────────────────────
   clients: router({
     list: protectedProcedure.query(async () => {

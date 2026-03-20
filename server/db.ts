@@ -26,6 +26,7 @@ import {
   workersCompNotes, InsertWorkersCompNote, WorkersCompNote,
   unemploymentClaims, InsertUnemploymentClaim, UnemploymentClaim,
   unemploymentClaimDocuments, InsertUnemploymentClaimDocument,
+  trainingRecords, InsertTrainingRecord, TrainingRecord,
 } from "../drizzle/schema";
 import { nanoid } from 'nanoid';
 
@@ -1728,4 +1729,62 @@ export async function createUnemploymentClaimDocument(data: InsertUnemploymentCl
   if (!db) return 0;
   const result = await db.insert(unemploymentClaimDocuments).values(data);
   return Number(result[0].insertId);
+}
+
+
+// ============ TRAINING RECORD QUERIES ============
+
+export async function getAllTrainingRecords() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: trainingRecords.id,
+      employeeId: trainingRecords.employeeId,
+      employeeFirstName: employees.legalFirstName,
+      employeeLastName: employees.legalLastName,
+      courseName: trainingRecords.courseName,
+      courseSource: trainingRecords.courseSource,
+      trackRequirement: trainingRecords.trackRequirement,
+      isInitial: trainingRecords.isInitial,
+      status: trainingRecords.status,
+      assignedDate: trainingRecords.assignedDate,
+      completedDate: trainingRecords.completedDate,
+      score: trainingRecords.score,
+      hoursCredit: trainingRecords.hoursCredit,
+      expirationDate: trainingRecords.expirationDate,
+      createdAt: trainingRecords.createdAt,
+    })
+    .from(trainingRecords)
+    .leftJoin(employees, eq(trainingRecords.employeeId, employees.id))
+    .orderBy(desc(trainingRecords.createdAt));
+}
+
+export async function getTrainingRecordsByEmployeeId(employeeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(trainingRecords).where(eq(trainingRecords.employeeId, employeeId)).orderBy(desc(trainingRecords.createdAt));
+}
+
+export async function createTrainingRecord(data: InsertTrainingRecord) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(trainingRecords).values(data);
+  return { id: Number(result[0].insertId) };
+}
+
+export async function updateTrainingRecord(id: number, data: Partial<InsertTrainingRecord>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(trainingRecords).set(data).where(eq(trainingRecords.id, id));
+  const result = await db.select().from(trainingRecords).where(eq(trainingRecords.id, id)).limit(1);
+  return result[0];
+}
+
+export async function bulkCreateTrainingRecords(records: InsertTrainingRecord[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (records.length === 0) return [];
+  const result = await db.insert(trainingRecords).values(records);
+  return { count: records.length, firstId: Number(result[0].insertId) };
 }
