@@ -25,6 +25,7 @@ import {
   CircleDot, User, HardHat, AlertCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 
 // ── Constants ─────────────────────────────────────────────────────
@@ -461,6 +462,7 @@ function IncidentDetailDialog({ incidentId, open, onOpenChange }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const [, navigate] = useLocation();
   const utils = trpc.useUtils();
   const { data: incident, isLoading } = trpc.incidents.getById.useQuery(
     { id: incidentId! },
@@ -598,13 +600,28 @@ function IncidentDetailDialog({ incidentId, open, onOpenChange }: {
                       </span>
                     </div>
                     {!incident.workersCompClaimId ? (
-                      <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-xs">
+                      <Button
+                        size="sm"
+                        className="bg-amber-600 hover:bg-amber-700 text-xs"
+                        onClick={() => {
+                          onOpenChange(false);
+                          navigate(`/compliance/claims?createWC=1&employeeId=${incident.caregiverId || ""}&incidentId=${incident.id}`);
+                        }}
+                      >
                         Create WC Claim
                       </Button>
                     ) : (
-                      <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs">
-                        WC Claim #{incident.workersCompClaimId}
-                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-emerald-700 dark:text-emerald-400"
+                        onClick={() => {
+                          onOpenChange(false);
+                          navigate(`/compliance/claims/wc/${incident.workersCompClaimId}`);
+                        }}
+                      >
+                        WC Claim #{incident.workersCompClaimId} →
+                      </Button>
                     )}
                   </div>
                 </Card>

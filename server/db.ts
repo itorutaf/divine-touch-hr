@@ -22,6 +22,10 @@ import {
   clearances, InsertClearance, Clearance,
   exclusionScreenings, InsertExclusionScreening, ExclusionScreening,
   incidents, InsertIncident, Incident,
+  workersCompClaims, InsertWorkersCompClaim, WorkersCompClaim,
+  workersCompNotes, InsertWorkersCompNote, WorkersCompNote,
+  unemploymentClaims, InsertUnemploymentClaim, UnemploymentClaim,
+  unemploymentClaimDocuments, InsertUnemploymentClaimDocument,
 } from "../drizzle/schema";
 import { nanoid } from 'nanoid';
 
@@ -1538,4 +1542,190 @@ export async function updateIncident(id: number, data: Partial<InsertIncident>):
   const db = await getDb();
   if (!db) return;
   await db.update(incidents).set(data).where(eq(incidents.id, id));
+}
+
+// ============ WORKERS' COMP CLAIMS ============
+
+export async function getAllWorkersCompClaims() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: workersCompClaims.id,
+      tenantId: workersCompClaims.tenantId,
+      employeeId: workersCompClaims.employeeId,
+      employeeFirstName: employees.legalFirstName,
+      employeeLastName: employees.legalLastName,
+      incidentId: workersCompClaims.incidentId,
+      carebaseClaimNumber: workersCompClaims.carebaseClaimNumber,
+      wcaisClaimNumber: workersCompClaims.wcaisClaimNumber,
+      carrierClaimNumber: workersCompClaims.carrierClaimNumber,
+      injuryDate: workersCompClaims.injuryDate,
+      injuryDescription: workersCompClaims.injuryDescription,
+      bodyPartAffected: workersCompClaims.bodyPartAffected,
+      natureOfInjury: workersCompClaims.natureOfInjury,
+      causeOfInjury: workersCompClaims.causeOfInjury,
+      locationOfInjury: workersCompClaims.locationOfInjury,
+      treatingPhysician: workersCompClaims.treatingPhysician,
+      treatingFacility: workersCompClaims.treatingFacility,
+      initialTreatmentDate: workersCompClaims.initialTreatmentDate,
+      wageAtInjury: workersCompClaims.wageAtInjury,
+      hoursPerWeek: workersCompClaims.hoursPerWeek,
+      jobTitleAtInjury: workersCompClaims.jobTitleAtInjury,
+      employerNotifiedDate: workersCompClaims.employerNotifiedDate,
+      froiFiledDate: workersCompClaims.froiFiledDate,
+      froiDeadline: workersCompClaims.froiDeadline,
+      carrierNotifiedDate: workersCompClaims.carrierNotifiedDate,
+      carrierResponseDeadline: workersCompClaims.carrierResponseDeadline,
+      carrierDecision: workersCompClaims.carrierDecision,
+      carrierDecisionDate: workersCompClaims.carrierDecisionDate,
+      noticeType: workersCompClaims.noticeType,
+      status: workersCompClaims.status,
+      returnToWorkDate: workersCompClaims.returnToWorkDate,
+      claimClosedDate: workersCompClaims.claimClosedDate,
+      closureReason: workersCompClaims.closureReason,
+      totalMedicalPaid: workersCompClaims.totalMedicalPaid,
+      totalIndemnityPaid: workersCompClaims.totalIndemnityPaid,
+      reserveAmount: workersCompClaims.reserveAmount,
+      adjusterName: workersCompClaims.adjusterName,
+      adjusterPhone: workersCompClaims.adjusterPhone,
+      adjusterEmail: workersCompClaims.adjusterEmail,
+      froiDocumentS3Key: workersCompClaims.froiDocumentS3Key,
+      createdAt: workersCompClaims.createdAt,
+      updatedAt: workersCompClaims.updatedAt,
+    })
+    .from(workersCompClaims)
+    .leftJoin(employees, eq(workersCompClaims.employeeId, employees.id))
+    .orderBy(desc(workersCompClaims.createdAt));
+}
+
+export async function getWorkersCompClaimById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(workersCompClaims)
+    .where(eq(workersCompClaims.id, id))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createWorkersCompClaim(data: InsertWorkersCompClaim): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(workersCompClaims).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function updateWorkersCompClaim(id: number, data: Partial<InsertWorkersCompClaim>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(workersCompClaims).set(data).where(eq(workersCompClaims.id, id));
+}
+
+export async function getWorkersCompNotes(claimId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(workersCompNotes)
+    .where(eq(workersCompNotes.claimId, claimId))
+    .orderBy(desc(workersCompNotes.createdAt));
+}
+
+export async function createWorkersCompNote(data: InsertWorkersCompNote): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(workersCompNotes).values(data);
+  return Number(result[0].insertId);
+}
+
+// ============ UNEMPLOYMENT CLAIMS ============
+
+export async function getAllUnemploymentClaims() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: unemploymentClaims.id,
+      tenantId: unemploymentClaims.tenantId,
+      employeeId: unemploymentClaims.employeeId,
+      employeeFirstName: employees.legalFirstName,
+      employeeLastName: employees.legalLastName,
+      claimNumber: unemploymentClaims.claimNumber,
+      sidesRequestId: unemploymentClaims.sidesRequestId,
+      claimantName: unemploymentClaims.claimantName,
+      claimantSSNLast4: unemploymentClaims.claimantSSNLast4,
+      hireDate: unemploymentClaims.hireDate,
+      separationDate: unemploymentClaims.separationDate,
+      separationReason: unemploymentClaims.separationReason,
+      separationDetails: unemploymentClaims.separationDetails,
+      finalWageRate: unemploymentClaims.finalWageRate,
+      averageWeeklyWage: unemploymentClaims.averageWeeklyWage,
+      lastDayWorked: unemploymentClaims.lastDayWorked,
+      jobTitle: unemploymentClaims.jobTitle,
+      requestReceivedDate: unemploymentClaims.requestReceivedDate,
+      responseDeadline: unemploymentClaims.responseDeadline,
+      responseSubmittedDate: unemploymentClaims.responseSubmittedDate,
+      contestClaim: unemploymentClaims.contestClaim,
+      contestReason: unemploymentClaims.contestReason,
+      determination: unemploymentClaims.determination,
+      determinationDate: unemploymentClaims.determinationDate,
+      weeklyBenefitAmount: unemploymentClaims.weeklyBenefitAmount,
+      appealFiled: unemploymentClaims.appealFiled,
+      appealFiledDate: unemploymentClaims.appealFiledDate,
+      appealDeadline: unemploymentClaims.appealDeadline,
+      hearingDate: unemploymentClaims.hearingDate,
+      appealOutcome: unemploymentClaims.appealOutcome,
+      estimatedCostToEmployer: unemploymentClaims.estimatedCostToEmployer,
+      chargedToAccount: unemploymentClaims.chargedToAccount,
+      status: unemploymentClaims.status,
+      sidesResponseS3Key: unemploymentClaims.sidesResponseS3Key,
+      createdAt: unemploymentClaims.createdAt,
+      updatedAt: unemploymentClaims.updatedAt,
+    })
+    .from(unemploymentClaims)
+    .leftJoin(employees, eq(unemploymentClaims.employeeId, employees.id))
+    .orderBy(desc(unemploymentClaims.createdAt));
+}
+
+export async function getUnemploymentClaimById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(unemploymentClaims)
+    .where(eq(unemploymentClaims.id, id))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createUnemploymentClaim(data: InsertUnemploymentClaim): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(unemploymentClaims).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function updateUnemploymentClaim(id: number, data: Partial<InsertUnemploymentClaim>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(unemploymentClaims).set(data).where(eq(unemploymentClaims.id, id));
+}
+
+export async function getUnemploymentClaimDocuments(claimId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(unemploymentClaimDocuments)
+    .where(eq(unemploymentClaimDocuments.claimId, claimId))
+    .orderBy(desc(unemploymentClaimDocuments.createdAt));
+}
+
+export async function createUnemploymentClaimDocument(data: InsertUnemploymentClaimDocument): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(unemploymentClaimDocuments).values(data);
+  return Number(result[0].insertId);
 }

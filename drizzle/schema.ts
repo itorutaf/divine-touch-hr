@@ -1076,3 +1076,147 @@ export const integrationConfigs = mysqlTable("integration_configs", {
 
 export type IntegrationConfig = typeof integrationConfigs.$inferSelect;
 export type InsertIntegrationConfig = typeof integrationConfigs.$inferInsert;
+
+// ============ CLAIMS & COMPLIANCE CENTER ============
+
+/**
+ * Workers' Compensation Claims
+ * PA WCAIS integration: FROI filing within 3 business days of injury
+ */
+export const workersCompClaims = mysqlTable("workers_comp_claims", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: varchar("tenantId", { length: 36 }),
+  employeeId: int("employeeId"),
+  incidentId: int("incidentId"),
+  carebaseClaimNumber: varchar("carebaseClaimNumber", { length: 50 }),
+  wcaisClaimNumber: varchar("wcaisClaimNumber", { length: 50 }),
+  carrierClaimNumber: varchar("carrierClaimNumber", { length: 50 }),
+  injuryDate: timestamp("injuryDate"),
+  injuryDescription: text("injuryDescription"),
+  bodyPartAffected: varchar("bodyPartAffected", { length: 200 }),
+  natureOfInjury: varchar("natureOfInjury", { length: 200 }),
+  causeOfInjury: varchar("causeOfInjury", { length: 200 }),
+  locationOfInjury: varchar("locationOfInjury", { length: 200 }),
+  treatingPhysician: varchar("treatingPhysician", { length: 200 }),
+  treatingFacility: varchar("treatingFacility", { length: 200 }),
+  initialTreatmentDate: date("initialTreatmentDate"),
+  wageAtInjury: decimal("wageAtInjury", { precision: 8, scale: 2 }),
+  hoursPerWeek: decimal("hoursPerWeek", { precision: 5, scale: 1 }),
+  jobTitleAtInjury: varchar("jobTitleAtInjury", { length: 200 }),
+  employerNotifiedDate: timestamp("employerNotifiedDate"),
+  froiFiledDate: timestamp("froiFiledDate"),
+  froiDeadline: timestamp("froiDeadline"),
+  carrierNotifiedDate: timestamp("carrierNotifiedDate"),
+  carrierResponseDeadline: timestamp("carrierResponseDeadline"),
+  carrierDecision: mysqlEnum("carrierDecision", ["pending", "accepted", "temporary_accepted", "denied"]),
+  carrierDecisionDate: timestamp("carrierDecisionDate"),
+  noticeType: mysqlEnum("noticeType", ["NCP", "NTCP", "denial"]),
+  status: mysqlEnum("wcStatus", [
+    "reported", "froi_pending", "froi_filed", "carrier_reviewing",
+    "accepted", "denied", "appealed", "modified", "suspended", "closed"
+  ]).default("reported"),
+  returnToWorkDate: date("returnToWorkDate"),
+  claimClosedDate: date("claimClosedDate"),
+  closureReason: varchar("closureReason", { length: 200 }),
+  totalMedicalPaid: decimal("totalMedicalPaid", { precision: 10, scale: 2 }),
+  totalIndemnityPaid: decimal("totalIndemnityPaid", { precision: 10, scale: 2 }),
+  reserveAmount: decimal("reserveAmount", { precision: 10, scale: 2 }),
+  adjusterName: varchar("adjusterName", { length: 200 }),
+  adjusterPhone: varchar("adjusterPhone", { length: 20 }),
+  adjusterEmail: varchar("adjusterEmail", { length: 200 }),
+  froiDocumentS3Key: varchar("froiDocumentS3Key", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WorkersCompClaim = typeof workersCompClaims.$inferSelect;
+export type InsertWorkersCompClaim = typeof workersCompClaims.$inferInsert;
+
+/**
+ * Workers' Comp Notes — activity log for WC claims
+ */
+export const workersCompNotes = mysqlTable("workers_comp_notes", {
+  id: int("id").autoincrement().primaryKey(),
+  claimId: int("claimId"),
+  authorId: int("authorId"),
+  noteType: mysqlEnum("wcNoteType", [
+    "status_update", "medical_update", "adjuster_contact", "return_to_work", "internal_note"
+  ]),
+  content: text("content"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WorkersCompNote = typeof workersCompNotes.$inferSelect;
+export type InsertWorkersCompNote = typeof workersCompNotes.$inferInsert;
+
+/**
+ * Unemployment Claims — SIDES E-Response tracking
+ * PA response deadline: 10 calendar days from request received date
+ */
+export const unemploymentClaims = mysqlTable("unemployment_claims", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: varchar("tenantId", { length: 36 }),
+  employeeId: int("employeeId"),
+  claimNumber: varchar("claimNumber", { length: 50 }),
+  sidesRequestId: varchar("sidesRequestId", { length: 100 }),
+  claimantName: varchar("claimantName", { length: 200 }),
+  claimantSSNLast4: varchar("claimantSSNLast4", { length: 4 }),
+  hireDate: date("hireDate"),
+  separationDate: date("separationDate"),
+  separationReason: mysqlEnum("separationReason", [
+    "voluntary_quit", "involuntary_termination", "layoff", "reduction_in_force",
+    "mutual_agreement", "end_of_assignment", "abandonment", "misconduct",
+    "poor_performance", "attendance", "policy_violation", "other"
+  ]),
+  separationDetails: text("separationDetails"),
+  finalWageRate: decimal("finalWageRate", { precision: 8, scale: 2 }),
+  averageWeeklyWage: decimal("averageWeeklyWage", { precision: 8, scale: 2 }),
+  lastDayWorked: date("lastDayWorked"),
+  jobTitle: varchar("ucJobTitle", { length: 200 }),
+  requestReceivedDate: date("requestReceivedDate"),
+  responseDeadline: date("responseDeadline"),
+  responseSubmittedDate: date("responseSubmittedDate"),
+  responseSubmittedBy: int("responseSubmittedBy"),
+  contestClaim: boolean("contestClaim"),
+  contestReason: text("contestReason"),
+  determination: mysqlEnum("ucDetermination", ["pending", "approved", "denied", "partially_approved"]),
+  determinationDate: date("determinationDate"),
+  weeklyBenefitAmount: decimal("weeklyBenefitAmount", { precision: 8, scale: 2 }),
+  appealFiled: boolean("appealFiled").default(false),
+  appealFiledDate: date("appealFiledDate"),
+  appealDeadline: date("appealDeadline"),
+  hearingDate: timestamp("hearingDate"),
+  appealOutcome: mysqlEnum("appealOutcome", ["pending", "upheld", "reversed", "modified"]),
+  estimatedCostToEmployer: decimal("estimatedCostToEmployer", { precision: 10, scale: 2 }),
+  chargedToAccount: boolean("chargedToAccount"),
+  status: mysqlEnum("ucStatus", [
+    "new", "response_pending", "responded", "determination_pending",
+    "determined", "appealed", "hearing_scheduled", "closed"
+  ]).default("new"),
+  sidesResponseS3Key: varchar("sidesResponseS3Key", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UnemploymentClaim = typeof unemploymentClaims.$inferSelect;
+export type InsertUnemploymentClaim = typeof unemploymentClaims.$inferInsert;
+
+/**
+ * Unemployment Claim Documents — evidence & correspondence
+ */
+export const unemploymentClaimDocuments = mysqlTable("unemployment_claim_documents", {
+  id: int("id").autoincrement().primaryKey(),
+  claimId: int("claimId"),
+  documentType: mysqlEnum("ucDocType", [
+    "sides_request", "sides_response", "determination_notice", "appeal_filing",
+    "hearing_notice", "hearing_decision", "separation_agreement", "disciplinary_records",
+    "attendance_records", "resignation_letter", "termination_letter", "other"
+  ]),
+  fileName: varchar("fileName", { length: 200 }),
+  s3Key: varchar("ucDocS3Key", { length: 500 }),
+  uploadedBy: int("uploadedBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UnemploymentClaimDocument = typeof unemploymentClaimDocuments.$inferSelect;
+export type InsertUnemploymentClaimDocument = typeof unemploymentClaimDocuments.$inferInsert;

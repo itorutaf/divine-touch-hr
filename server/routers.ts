@@ -1614,6 +1614,372 @@ export const appRouter = router({
       }),
   }),
 
+  // ── Claims Center (Workers' Comp + Unemployment) ──────────────────
+  claims: router({
+    dashboard: router({
+      getStats: complianceProcedure.query(async () => {
+        const wcClaims = await db.getAllWorkersCompClaims();
+        const ucClaims = await db.getAllUnemploymentClaims();
+        const now = new Date();
+
+        const openWC = wcClaims.filter((c: any) => !["closed", "denied"].includes(c.status ?? "")).length;
+        const openUC = ucClaims.filter((c: any) => c.status !== "closed").length;
+
+        let overdueCount = 0;
+        const deadlinesThisWeek: any[] = [];
+        const weekEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+        // Check WC FROI deadlines
+        for (const wc of wcClaims as any[]) {
+          if (wc.froiDeadline && !wc.froiFiledDate) {
+            const dl = new Date(wc.froiDeadline);
+            if (dl < now) overdueCount++;
+            if (dl >= now && dl <= weekEnd) deadlinesThisWeek.push({
+              type: "wc", claimId: wc.id, label: "FROI Due", deadline: dl,
+              employeeName: `${wc.employeeFirstName || ""} ${wc.employeeLastName || ""}`.trim(),
+            });
+          }
+        }
+
+        // Check UC response deadlines
+        for (const uc of ucClaims as any[]) {
+          if (uc.responseDeadline && !uc.responseSubmittedDate) {
+            const dl = new Date(uc.responseDeadline);
+            if (dl < now) overdueCount++;
+            if (dl >= now && dl <= weekEnd) deadlinesThisWeek.push({
+              type: "uc", claimId: uc.id, label: "SIDES Response Due", deadline: dl,
+              employeeName: uc.claimantName || `${uc.employeeFirstName || ""} ${uc.employeeLastName || ""}`.trim(),
+            });
+          }
+          if (uc.appealDeadline && uc.appealFiled === false) {
+            const dl = new Date(uc.appealDeadline);
+            if (dl < now) overdueCount++;
+            if (dl >= now && dl <= weekEnd) deadlinesThisWeek.push({
+              type: "uc", claimId: uc.id, label: "Appeal Deadline", deadline: dl,
+              employeeName: uc.claimantName || "",
+            });
+          }
+        }
+
+        deadlinesThisWeek.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
+
+        return { openWC, openUC, overdueCount, deadlinesThisWeek: deadlinesThisWeek.length };
+      }),
+
+      getDeadlines: complianceProcedure.query(async () => {
+        const wcClaims = await db.getAllWorkersCompClaims();
+        const ucClaims = await db.getAllUnemploymentClaims();
+        const now = new Date();
+        const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const deadlines: any[] = [];
+
+        for (const wc of wcClaims as any[]) {
+          if (wc.froiDeadline && !wc.froiFiledDate) {
+            const dl = new Date(wc.froiDeadline);
+            if (dl <= thirtyDays) deadlines.push({
+              type: "wc", claimId: wc.id, label: "File FROI", deadline: dl,
+              daysRemaining: Math.ceil((dl.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+              employeeName: `${wc.employeeFirstName || ""} ${wc.employeeLastName || ""}`.trim(),
+              claimNumber: wc.carebaseClaimNumber,
+            });
+          }
+          if (wc.carrierResponseDeadline && !wc.carrierDecisionDate) {
+            const dl = new Date(wc.carrierResponseDeadline);
+            if (dl <= thirtyDays) deadlines.push({
+              type: "wc", claimId: wc.id, label: "Carrier Response Due", deadline: dl,
+              daysRemaining: Math.ceil((dl.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+              employeeName: `${wc.employeeFirstName || ""} ${wc.employeeLastName || ""}`.trim(),
+              claimNumber: wc.carebaseClaimNumber,
+            });
+          }
+        }
+
+        for (const uc of ucClaims as any[]) {
+          if (uc.responseDeadline && !uc.responseSubmittedDate) {
+            const dl = new Date(uc.responseDeadline);
+            if (dl <= thirtyDays) deadlines.push({
+              type: "uc", claimId: uc.id, label: "Respond in SIDES", deadline: dl,
+              daysRemaining: Math.ceil((dl.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+              employeeName: uc.claimantName || "",
+              claimNumber: uc.claimNumber,
+            });
+          }
+          if (uc.appealDeadline && uc.status === "determined" && !uc.appealFiled) {
+            const dl = new Date(uc.appealDeadline);
+            if (dl <= thirtyDays) deadlines.push({
+              type: "uc", claimId: uc.id, label: "Appeal Deadline", deadline: dl,
+              daysRemaining: Math.ceil((dl.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+              employeeName: uc.claimantName || "",
+              claimNumber: uc.claimNumber,
+            });
+          }
+          if (uc.hearingDate) {
+            const dl = new Date(uc.hearingDate);
+            if (dl >= now && dl <= thirtyDays) deadlines.push({
+              type: "uc", claimId: uc.id, label: "UC Hearing", deadline: dl,
+              daysRemaining: Math.ceil((dl.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+              employeeName: uc.claimantName || "",
+              claimNumber: uc.claimNumber,
+            });
+          }
+        }
+
+        deadlines.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
+        return deadlines;
+      }),
+    }),
+
+    wc: router({
+      list: complianceProcedure
+        .input(z.object({ status: z.string().optional() }).optional())
+        .query(async ({ input }) => {
+          const all = await db.getAllWorkersCompClaims();
+          if (!input?.status) return all;
+          return all.filter((c: any) => c.status === input.status);
+        }),
+
+      getById: complianceProcedure
+        .input(z.object({ id: z.number() }))
+        .query(async ({ input }) => {
+          const claim = await db.getWorkersCompClaimById(input.id);
+          if (!claim) throw new TRPCError({ code: "NOT_FOUND" });
+          const notes = await db.getWorkersCompNotes(input.id);
+          return { ...claim, notes };
+        }),
+
+      create: complianceProcedure
+        .input(z.object({
+          incidentId: z.number().optional(),
+          employeeId: z.number(),
+          injuryDate: z.string(),
+          injuryDescription: z.string().optional(),
+          bodyPartAffected: z.string().optional(),
+          natureOfInjury: z.string().optional(),
+          causeOfInjury: z.string().optional(),
+          locationOfInjury: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          // Auto-populate from employee record
+          const employee = await db.getEmployeeById(input.employeeId);
+          const injuryDate = new Date(input.injuryDate);
+          const froiDeadline = addBusinessDays(injuryDate, 3);
+
+          // Generate claim number
+          const claimNum = `WC-${new Date().getFullYear()}-${String(Date.now()).slice(-5)}`;
+
+          const id = await db.createWorkersCompClaim({
+            ...input,
+            carebaseClaimNumber: claimNum,
+            injuryDate,
+            froiDeadline,
+            employerNotifiedDate: new Date(),
+            status: "reported",
+            wageAtInjury: (employee as any)?.payRate ?? null,
+            hoursPerWeek: "40",
+            jobTitleAtInjury: (employee as any)?.roleAppliedFor ?? null,
+          } as any);
+
+          // Link incident to WC claim if created from incident
+          if (input.incidentId) {
+            await db.updateIncident(input.incidentId, { workersCompClaimId: id } as any);
+          }
+
+          return { id, claimNumber: claimNum };
+        }),
+
+      update: complianceProcedure
+        .input(z.object({
+          id: z.number(),
+          wcaisClaimNumber: z.string().optional(),
+          carrierClaimNumber: z.string().optional(),
+          status: z.string().optional(),
+          froiFiledDate: z.string().optional(),
+          carrierNotifiedDate: z.string().optional(),
+          carrierDecision: z.string().optional(),
+          carrierDecisionDate: z.string().optional(),
+          noticeType: z.string().optional(),
+          returnToWorkDate: z.string().optional(),
+          claimClosedDate: z.string().optional(),
+          closureReason: z.string().optional(),
+          treatingPhysician: z.string().optional(),
+          treatingFacility: z.string().optional(),
+          totalMedicalPaid: z.string().optional(),
+          totalIndemnityPaid: z.string().optional(),
+          reserveAmount: z.string().optional(),
+          adjusterName: z.string().optional(),
+          adjusterPhone: z.string().optional(),
+          adjusterEmail: z.string().optional(),
+          bodyPartAffected: z.string().optional(),
+          natureOfInjury: z.string().optional(),
+          causeOfInjury: z.string().optional(),
+          locationOfInjury: z.string().optional(),
+          injuryDescription: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          const { id, ...data } = input;
+          const updateData: any = { ...data };
+          for (const field of ["froiFiledDate", "carrierNotifiedDate", "carrierDecisionDate"] as const) {
+            if (updateData[field]) updateData[field] = new Date(updateData[field]);
+          }
+          await db.updateWorkersCompClaim(id, updateData);
+          return { success: true };
+        }),
+
+      addNote: complianceProcedure
+        .input(z.object({
+          claimId: z.number(),
+          noteType: z.enum(["status_update", "medical_update", "adjuster_contact", "return_to_work", "internal_note"]),
+          content: z.string(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+          const id = await db.createWorkersCompNote({
+            ...input,
+            authorId: ctx.user.id,
+          } as any);
+          return { id };
+        }),
+    }),
+
+    uc: router({
+      list: complianceProcedure
+        .input(z.object({ status: z.string().optional() }).optional())
+        .query(async ({ input }) => {
+          const all = await db.getAllUnemploymentClaims();
+          if (!input?.status) return all;
+          return all.filter((c: any) => c.status === input.status);
+        }),
+
+      getById: complianceProcedure
+        .input(z.object({ id: z.number() }))
+        .query(async ({ input }) => {
+          const claim = await db.getUnemploymentClaimById(input.id);
+          if (!claim) throw new TRPCError({ code: "NOT_FOUND" });
+          const documents = await db.getUnemploymentClaimDocuments(input.id);
+          return { ...claim, documents };
+        }),
+
+      create: complianceProcedure
+        .input(z.object({
+          claimantName: z.string(),
+          claimNumber: z.string().optional(),
+          sidesRequestId: z.string().optional(),
+          claimantSSNLast4: z.string().optional(),
+          requestReceivedDate: z.string(),
+          separationReason: z.string().optional(),
+          separationDetails: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+          // Auto-match to employee by name
+          const allEmployees = await db.getAllEmployees();
+          const nameParts = input.claimantName.toLowerCase().split(" ");
+          const matchedEmployee = allEmployees.find((e: any) =>
+            nameParts.some(p => e.legalFirstName?.toLowerCase().includes(p)) &&
+            nameParts.some(p => e.legalLastName?.toLowerCase().includes(p))
+          );
+
+          const requestDate = new Date(input.requestReceivedDate);
+          // PA SIDES: 10 calendar days to respond
+          const responseDeadline = new Date(requestDate.getTime() + 10 * 24 * 60 * 60 * 1000);
+
+          const id = await db.createUnemploymentClaim({
+            ...input,
+            employeeId: matchedEmployee?.id ?? null,
+            requestReceivedDate: input.requestReceivedDate,
+            responseDeadline: responseDeadline.toISOString().split("T")[0],
+            hireDate: (matchedEmployee as any)?.submissionTimestamp?.toISOString?.()?.split("T")[0] ?? null,
+            jobTitle: (matchedEmployee as any)?.roleAppliedFor ?? null,
+            finalWageRate: (matchedEmployee as any)?.payRate ?? null,
+            status: "response_pending",
+          } as any);
+
+          return { id, matchedEmployeeId: matchedEmployee?.id ?? null };
+        }),
+
+      update: complianceProcedure
+        .input(z.object({
+          id: z.number(),
+          status: z.string().optional(),
+          contestClaim: z.boolean().optional(),
+          contestReason: z.string().optional(),
+          separationReason: z.string().optional(),
+          separationDetails: z.string().optional(),
+          responseSubmittedDate: z.string().optional(),
+          determination: z.string().optional(),
+          determinationDate: z.string().optional(),
+          weeklyBenefitAmount: z.string().optional(),
+          appealFiled: z.boolean().optional(),
+          appealFiledDate: z.string().optional(),
+          appealDeadline: z.string().optional(),
+          hearingDate: z.string().optional(),
+          appealOutcome: z.string().optional(),
+          estimatedCostToEmployer: z.string().optional(),
+          chargedToAccount: z.boolean().optional(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+          const { id, ...data } = input;
+          const updateData: any = { ...data };
+          if (updateData.responseSubmittedDate) {
+            updateData.responseSubmittedBy = ctx.user.id;
+          }
+          await db.updateUnemploymentClaim(id, updateData);
+          return { success: true };
+        }),
+
+      prepareResponse: complianceProcedure
+        .input(z.object({ id: z.number() }))
+        .query(async ({ input }) => {
+          const claim = await db.getUnemploymentClaimById(input.id);
+          if (!claim) throw new TRPCError({ code: "NOT_FOUND" });
+
+          // Build SIDES-formatted response data
+          return {
+            claimantName: claim.claimantName,
+            claimantSSNLast4: claim.claimantSSNLast4,
+            hireDate: claim.hireDate,
+            separationDate: claim.separationDate,
+            lastDayWorked: claim.lastDayWorked,
+            jobTitle: claim.jobTitle,
+            separationReason: claim.separationReason,
+            separationDetails: claim.separationDetails,
+            finalWageRate: claim.finalWageRate,
+            averageWeeklyWage: claim.averageWeeklyWage,
+            contestClaim: claim.contestClaim,
+            contestReason: claim.contestReason,
+          };
+        }),
+
+      addDocument: complianceProcedure
+        .input(z.object({
+          claimId: z.number(),
+          documentType: z.enum([
+            "sides_request", "sides_response", "determination_notice", "appeal_filing",
+            "hearing_notice", "hearing_decision", "separation_agreement", "disciplinary_records",
+            "attendance_records", "resignation_letter", "termination_letter", "other"
+          ]),
+          fileName: z.string(),
+          fileData: z.string(), // base64
+          mimeType: z.string(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+          const { url, key } = await storagePut(
+            `uc-claims/${input.claimId}/${input.fileName}`,
+            Buffer.from(input.fileData, "base64"),
+            input.mimeType
+          );
+
+          const id = await db.createUnemploymentClaimDocument({
+            claimId: input.claimId,
+            documentType: input.documentType as any,
+            fileName: input.fileName,
+            s3Key: key,
+            uploadedBy: ctx.user.id,
+          } as any);
+
+          return { id, url };
+        }),
+    }),
+  }),
+
   // ── Incidents (PA-mandated reporting) ──────────────────────────────
   incidents: router({
     list: complianceProcedure
@@ -1908,6 +2274,21 @@ async function advancePhaseIfReady(employeeId: number, completedGate: string) {
       });
     }
   }
+}
+
+/**
+ * Add business days to a date (skips weekends).
+ * Used for FROI filing deadline (3 business days).
+ */
+function addBusinessDays(start: Date, days: number): Date {
+  const result = new Date(start);
+  let remaining = days;
+  while (remaining > 0) {
+    result.setDate(result.getDate() + 1);
+    const day = result.getDay();
+    if (day !== 0 && day !== 6) remaining--;
+  }
+  return result;
 }
 
 /**

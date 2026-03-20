@@ -21,6 +21,7 @@ import {
   Settings,
   UserCog,
   Wifi,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 import { type NavGroup, getVisibleGroups } from "@shared/roles";
@@ -84,6 +85,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "EVV", href: "/compliance/evv", icon: Wifi },
       { label: "LEIE/SAM", href: "/compliance/screenings", icon: Search },
       { label: "Incidents", href: "/compliance/incidents", icon: AlertTriangle },
+      { label: "Claims Center", href: "/compliance/claims", icon: Scale },
       { label: "Audit Readiness", href: "/compliance/audit", icon: ClipboardCheck },
     ],
   },

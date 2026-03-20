@@ -43,6 +43,9 @@ import ClearanceTracker from "./pages/ClearanceTracker";
 import EVVCompliance from "./pages/EVVCompliance";
 import LEIEScreening from "./pages/LEIEScreening";
 import IncidentReporting from "./pages/IncidentReporting";
+import ClaimsDashboard from "./pages/ClaimsDashboard";
+import WorkersCompDetail from "./pages/WorkersCompDetail";
+import UnemploymentClaimDetail from "./pages/UnemploymentClaimDetail";
 import AuditReadiness from "./pages/AuditReadiness";
 
 // Operations
@@ -98,6 +101,9 @@ function Router() {
       <Route path="/compliance/evv" component={EVVCompliance} />
       <Route path="/compliance/screenings" component={LEIEScreening} />
       <Route path="/compliance/incidents" component={IncidentReporting} />
+      <Route path="/compliance/claims" component={ClaimsDashboard} />
+      <Route path="/compliance/claims/wc/:id" component={WorkersCompDetail} />
+      <Route path="/compliance/claims/uc/:id" component={UnemploymentClaimDetail} />
       <Route path="/compliance/audit" component={AuditReadiness} />
 
       {/* Operations */}
