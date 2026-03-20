@@ -1570,17 +1570,105 @@ export const appRouter = router({
         id: z.number(),
         firstName: z.string().optional(),
         lastName: z.string().optional(),
+        dob: z.string().optional(),
         serviceLine: z.enum(["OLTL", "ODP", "Skilled"]).optional(),
         region: z.number().optional(),
         status: z.enum(["referral", "assessment", "active", "on_hold", "discharged"]).optional(),
         phone: z.string().optional(),
         email: z.string().optional(),
+        addressLine1: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        zip: z.string().optional(),
+        county: z.string().optional(),
+        mcoId: z.string().optional(),
+        serviceType: z.string().optional(),
+        referralSource: z.string().optional(),
+        assignedCoordinatorId: z.number().nullable().optional(),
+        startDate: z.string().optional(),
+        dischargeDate: z.string().optional(),
+        dischargeReason: z.string().optional(),
+        emergencyContactName: z.string().optional(),
+        emergencyContactPhone: z.string().optional(),
+        emergencyContactRelation: z.string().optional(),
+        serviceCoordinatorName: z.string().optional(),
+        serviceCoordinatorPhone: z.string().optional(),
+        serviceCoordinatorEmail: z.string().optional(),
         notes: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
-        const { id, ...data } = input;
-        return db.updateClient(id, { ...data, lastModifiedBy: ctx.user.id });
+        const { id, dob, startDate, dischargeDate, ...rest } = input;
+        const data: Record<string, any> = { ...rest, lastModifiedBy: ctx.user.id };
+        if (dob !== undefined) data.dob = dob ? new Date(dob) : null;
+        if (startDate !== undefined) data.startDate = startDate ? new Date(startDate) : null;
+        if (dischargeDate !== undefined) data.dischargeDate = dischargeDate ? new Date(dischargeDate) : null;
+        return db.updateClient(id, data);
       }),
+
+    getStats: protectedProcedure.query(async () => {
+      const allClients = await db.getAllClients();
+      return {
+        total: allClients.length,
+        active: allClients.filter((c: any) => c.status === "active").length,
+        referral: allClients.filter((c: any) => c.status === "referral").length,
+        assessment: allClients.filter((c: any) => c.status === "assessment").length,
+        onHold: allClients.filter((c: any) => c.status === "on_hold").length,
+        discharged: allClients.filter((c: any) => c.status === "discharged").length,
+      };
+    }),
+
+    getReferralSources: protectedProcedure.query(async () => {
+      const allClients = await db.getAllClients();
+      const sourceMap: Record<string, { name: string; totalReferrals: number; activeClients: number; clients: any[] }> = {};
+      for (const c of allClients as any[]) {
+        const src = c.referralSource || "Unknown";
+        if (!sourceMap[src]) {
+          sourceMap[src] = { name: src, totalReferrals: 0, activeClients: 0, clients: [] };
+        }
+        sourceMap[src].totalReferrals++;
+        if (c.status === "active") sourceMap[src].activeClients++;
+        sourceMap[src].clients.push(c);
+      }
+      // Determine type heuristic based on source name
+      const getType = (name: string) => {
+        const lower = name.toLowerCase();
+        if (lower.includes("hospital") || lower.includes("medical") || lower.includes("health system")) return "Hospital";
+        if (lower.includes("sc") || lower.includes("upmc") || lower.includes("amerihealth") || lower.includes("mco") || lower.includes("health & wellness")) return "MCO/SC";
+        if (lower.includes("self") || lower.includes("family") || lower.includes("direct")) return "Direct";
+        if (lower.includes("community") || lower.includes("legal") || lower.includes("church") || lower.includes("faith")) return "Community Org";
+        return "Other";
+      };
+      return Object.values(sourceMap).map((s) => ({
+        name: s.name,
+        type: getType(s.name),
+        totalReferrals: s.totalReferrals,
+        activeClients: s.activeClients,
+        conversionRate: s.totalReferrals > 0 ? Math.round((s.activeClients / s.totalReferrals) * 100) : 0,
+      })).sort((a, b) => b.totalReferrals - a.totalReferrals);
+    }),
+
+    getForComparison: protectedProcedure.query(async () => {
+      const allClients = await db.getAllClients();
+      const activeClients = (allClients as any[]).filter((c: any) => c.status === "active");
+      // For each active client, try to pull latest profitability snapshot
+      const results = [];
+      for (const client of activeClients) {
+        const snapshots = await db.getSnapshotsByClientId(client.id);
+        const latest = snapshots[0];
+        results.push({
+          id: String(client.id),
+          name: `${client.firstName} ${client.lastName}`,
+          serviceLine: client.serviceLine || "OLTL",
+          region: client.region || 4,
+          weeklyRevenue: latest ? Number(latest.revenue) : 0,
+          weeklyProfit: latest ? Number(latest.grossProfit) : 0,
+          grossMargin: latest ? Number(latest.grossMargin) : 0,
+          profitScore: latest ? Number(latest.profitabilityScore) : 0,
+          recommendation: latest?.recommendation || "N/A",
+        });
+      }
+      return results;
+    }),
   }),
 
   // ── Authorizations ────────────────────────────────────────────────
