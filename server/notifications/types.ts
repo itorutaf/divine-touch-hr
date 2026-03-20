@@ -35,6 +35,10 @@ export interface NotificationEvent {
     | "exception_created"       // New exception flagged
     | "timesheet_reminder"      // Missing timesheet reminder
     | "auth_expiring"           // Authorization approaching end date
+    | "incident_created"        // New incident reported
+    | "incident_deadline_approaching" // PA deadline approaching (4hr warning)
+    | "incident_deadline_overdue"     // PA deadline missed — escalation
+    | "incident_workplace_injury"     // Workplace injury flagged → WC claim prompt
     | "system_alert";           // Generic system notification
 
   /** Human-readable title */

@@ -962,17 +962,26 @@ export type InsertTrainingRecord = typeof trainingRecords.$inferInsert;
 
 /**
  * Incident reports — PA-mandated timeline tracking
+ *
+ * PA Act 26/Act 28 incident reporting requirements:
+ * - OLTL 24-hour: abuse, neglect, exploitation, abandonment, death, serious injury, med errors (ER), service interruption, rights violations
+ * - OLTL 48-hour EIM entry: all reportable incidents (business days only)
+ * - ODP 24-hour: abuse, neglect, deaths, serious injuries, sexual abuse, rights violations, elopements
+ * - ODP 72-hour: medication errors, restraint use, ER visits, hospitalizations
+ * - All programs: investigation initiation 24hr, completion 30 calendar days
  */
 export const incidents = mysqlTable("incidents", {
   id: int("id").autoincrement().primaryKey(),
   tenantId: varchar("tenantId", { length: 36 }),
   clientId: int("clientId"),
   reportedBy: int("reportedBy"),
+  caregiverId: int("caregiverId"), // Employee involved in the incident
 
   category: mysqlEnum("incidentCategory", [
     "abuse_physical", "abuse_psychological", "abuse_sexual", "abuse_verbal",
     "neglect", "exploitation", "abandonment", "death", "serious_injury",
-    "medication_error", "service_interruption", "rights_violation", "elopement", "other"
+    "medication_error", "service_interruption", "rights_violation", "elopement",
+    "restraint_use", "er_visit", "hospitalization", "other"
   ]).notNull(),
   severity: mysqlEnum("incidentSeverity", ["critical", "major", "minor"]).notNull(),
 
@@ -980,16 +989,24 @@ export const incidents = mysqlTable("incidents", {
   description: text("description"),
   immediateActions: text("immediateActions"),
 
-  // PA-mandated deadlines
-  scNotifiedAt: timestamp("scNotifiedAt"),              // 24hr deadline
-  eimEnteredAt: timestamp("eimEnteredAt"),              // 48hr deadline
+  // PA-mandated deadlines — timestamps mark completion
+  scNotifiedAt: timestamp("scNotifiedAt"),              // Service Coordinator: 24hr deadline
+  eimEnteredAt: timestamp("eimEnteredAt"),              // EIM system entry: 48hr business days
   investigationStartedAt: timestamp("investigationStartedAt"), // 24hr deadline
-  investigationCompletedAt: timestamp("investigationCompletedAt"), // 30 day deadline
+  investigationCompletedAt: timestamp("investigationCompletedAt"), // 30 calendar day deadline
   participantNotifiedAt: timestamp("participantNotifiedAt"),   // 24hr deadline
 
   resolution: text("resolution"),
   correctiveActions: text("correctiveActions"),
-  status: mysqlEnum("incidentStatus", ["open", "investigating", "resolved", "closed"]).default("open"),
+  investigatorName: varchar("investigatorName", { length: 200 }),
+
+  // Workplace injury → triggers WC claim workflow
+  isWorkplaceInjury: boolean("isWorkplaceInjury").default(false),
+  workersCompClaimId: int("workersCompClaimId"), // Links to WC claim if created
+
+  status: mysqlEnum("incidentStatus", [
+    "open", "investigating", "pending_resolution", "resolved", "closed"
+  ]).default("open"),
 
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

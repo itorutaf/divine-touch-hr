@@ -21,6 +21,7 @@ import {
   integrationConfigs, InsertIntegrationConfig, IntegrationConfig,
   clearances, InsertClearance, Clearance,
   exclusionScreenings, InsertExclusionScreening, ExclusionScreening,
+  incidents, InsertIncident, Incident,
 } from "../drizzle/schema";
 import { nanoid } from 'nanoid';
 
@@ -1442,4 +1443,99 @@ export async function resolveExclusionScreening(id: number, resolvedBy: number, 
     resolvedBy,
     notes,
   }).where(eq(exclusionScreenings.id, id));
+}
+
+// ============ INCIDENT QUERIES ============
+
+export async function getAllIncidents() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: incidents.id,
+      tenantId: incidents.tenantId,
+      clientId: incidents.clientId,
+      clientFirstName: clients.firstName,
+      clientLastName: clients.lastName,
+      reportedBy: incidents.reportedBy,
+      caregiverId: incidents.caregiverId,
+      caregiverFirstName: employees.legalFirstName,
+      caregiverLastName: employees.legalLastName,
+      category: incidents.category,
+      severity: incidents.severity,
+      incidentDate: incidents.incidentDate,
+      description: incidents.description,
+      immediateActions: incidents.immediateActions,
+      scNotifiedAt: incidents.scNotifiedAt,
+      eimEnteredAt: incidents.eimEnteredAt,
+      investigationStartedAt: incidents.investigationStartedAt,
+      investigationCompletedAt: incidents.investigationCompletedAt,
+      participantNotifiedAt: incidents.participantNotifiedAt,
+      resolution: incidents.resolution,
+      correctiveActions: incidents.correctiveActions,
+      investigatorName: incidents.investigatorName,
+      isWorkplaceInjury: incidents.isWorkplaceInjury,
+      workersCompClaimId: incidents.workersCompClaimId,
+      status: incidents.status,
+      createdAt: incidents.createdAt,
+      updatedAt: incidents.updatedAt,
+    })
+    .from(incidents)
+    .leftJoin(clients, eq(incidents.clientId, clients.id))
+    .leftJoin(employees, eq(incidents.caregiverId, employees.id))
+    .orderBy(desc(incidents.createdAt));
+}
+
+export async function getIncidentById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select({
+      id: incidents.id,
+      tenantId: incidents.tenantId,
+      clientId: incidents.clientId,
+      clientFirstName: clients.firstName,
+      clientLastName: clients.lastName,
+      reportedBy: incidents.reportedBy,
+      caregiverId: incidents.caregiverId,
+      caregiverFirstName: employees.legalFirstName,
+      caregiverLastName: employees.legalLastName,
+      category: incidents.category,
+      severity: incidents.severity,
+      incidentDate: incidents.incidentDate,
+      description: incidents.description,
+      immediateActions: incidents.immediateActions,
+      scNotifiedAt: incidents.scNotifiedAt,
+      eimEnteredAt: incidents.eimEnteredAt,
+      investigationStartedAt: incidents.investigationStartedAt,
+      investigationCompletedAt: incidents.investigationCompletedAt,
+      participantNotifiedAt: incidents.participantNotifiedAt,
+      resolution: incidents.resolution,
+      correctiveActions: incidents.correctiveActions,
+      investigatorName: incidents.investigatorName,
+      isWorkplaceInjury: incidents.isWorkplaceInjury,
+      workersCompClaimId: incidents.workersCompClaimId,
+      status: incidents.status,
+      createdAt: incidents.createdAt,
+      updatedAt: incidents.updatedAt,
+    })
+    .from(incidents)
+    .leftJoin(clients, eq(incidents.clientId, clients.id))
+    .leftJoin(employees, eq(incidents.caregiverId, employees.id))
+    .where(eq(incidents.id, id))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createIncident(data: InsertIncident): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(incidents).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function updateIncident(id: number, data: Partial<InsertIncident>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(incidents).set(data).where(eq(incidents.id, id));
 }

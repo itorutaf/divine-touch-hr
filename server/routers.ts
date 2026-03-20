@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import { generateUKGExport, generateADPExport, generateHHAExchangeExport, generateGenericExport } from "./payrollExportService";
 import { storagePut } from "./storage";
+import { dispatch, notifyComplianceTeam } from "./notifications/dispatcher";
 import { calculateProfitability, getServiceTypes, getDefaultServiceType, getRate, getDefaultPayRate, WAIVER_DURATION, DEFAULT_COSTS, OLTL_HOURLY_RATES, ODP_RATES, SKILLED_RATES, REGION_NAMES, SERVICE_TYPE_LABELS } from "./modules/profitability";
 
 // Role-based procedure helpers
@@ -1613,6 +1614,205 @@ export const appRouter = router({
       }),
   }),
 
+  // ── Incidents (PA-mandated reporting) ──────────────────────────────
+  incidents: router({
+    list: complianceProcedure
+      .input(z.object({
+        status: z.enum(["open", "investigating", "pending_resolution", "resolved", "closed"]).optional(),
+        category: z.string().optional(),
+        severity: z.enum(["critical", "major", "minor"]).optional(),
+        clientId: z.number().optional(),
+        caregiverId: z.number().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const all = await db.getAllIncidents();
+        if (!input) return all;
+        return all.filter((inc: any) => {
+          if (input.status && inc.status !== input.status) return false;
+          if (input.category && inc.category !== input.category) return false;
+          if (input.severity && inc.severity !== input.severity) return false;
+          if (input.clientId && inc.clientId !== input.clientId) return false;
+          if (input.caregiverId && inc.caregiverId !== input.caregiverId) return false;
+          return true;
+        });
+      }),
+
+    getById: complianceProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const inc = await db.getIncidentById(input.id);
+        if (!inc) throw new TRPCError({ code: "NOT_FOUND", message: "Incident not found" });
+        return inc;
+      }),
+
+    create: complianceProcedure
+      .input(z.object({
+        clientId: z.number().optional(),
+        caregiverId: z.number().optional(),
+        category: z.enum([
+          "abuse_physical", "abuse_psychological", "abuse_sexual", "abuse_verbal",
+          "neglect", "exploitation", "abandonment", "death", "serious_injury",
+          "medication_error", "service_interruption", "rights_violation", "elopement",
+          "restraint_use", "er_visit", "hospitalization", "other"
+        ]),
+        severity: z.enum(["critical", "major", "minor"]),
+        incidentDate: z.string(),
+        description: z.string().optional(),
+        immediateActions: z.string().optional(),
+        isWorkplaceInjury: z.boolean().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const id = await db.createIncident({
+          ...input,
+          reportedBy: ctx.user.id,
+          incidentDate: new Date(input.incidentDate),
+          status: "open",
+        } as any);
+
+        // Fire notification to admin + compliance
+        await dispatch({
+          type: "incident_created",
+          title: "New Incident Reported",
+          body: `A ${input.severity} incident (${input.category.replace(/_/g, " ")}) has been reported. PA deadlines are now active.`,
+          category: "compliance",
+          severity: input.severity === "critical" ? "critical" : "warning",
+          targetUserIds: [],
+          targetRoles: ["admin", "compliance"],
+          actionUrl: `/compliance/incidents/${id}`,
+          metadata: { incidentId: id, category: input.category, severity: input.severity },
+        });
+
+        return { id };
+      }),
+
+    update: complianceProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["open", "investigating", "pending_resolution", "resolved", "closed"]).optional(),
+        description: z.string().optional(),
+        immediateActions: z.string().optional(),
+        resolution: z.string().optional(),
+        correctiveActions: z.string().optional(),
+        investigatorName: z.string().optional(),
+        isWorkplaceInjury: z.boolean().optional(),
+        // Milestone completion timestamps
+        scNotifiedAt: z.string().optional(),
+        eimEnteredAt: z.string().optional(),
+        investigationStartedAt: z.string().optional(),
+        investigationCompletedAt: z.string().optional(),
+        participantNotifiedAt: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        const updateData: any = { ...data };
+        // Convert ISO strings to Dates for timestamp fields
+        for (const field of ["scNotifiedAt", "eimEnteredAt", "investigationStartedAt", "investigationCompletedAt", "participantNotifiedAt"] as const) {
+          if (updateData[field]) updateData[field] = new Date(updateData[field]);
+        }
+        await db.updateIncident(id, updateData);
+        return { success: true };
+      }),
+
+    getDeadlines: complianceProcedure.query(async () => {
+      const all = await db.getAllIncidents();
+      const now = new Date();
+
+      return all
+        .filter((inc: any) => inc.status !== "closed" && inc.status !== "resolved")
+        .map((inc: any) => {
+          const incDate = inc.incidentDate ? new Date(inc.incidentDate) : now;
+          const milestones = [
+            {
+              key: "scNotifiedAt",
+              label: "SC Notified",
+              deadline: new Date(incDate.getTime() + 24 * 60 * 60 * 1000),
+              completedAt: inc.scNotifiedAt,
+            },
+            {
+              key: "eimEnteredAt",
+              label: "EIM Entered",
+              deadline: addBusinessHours(incDate, 48),
+              completedAt: inc.eimEnteredAt,
+            },
+            {
+              key: "investigationStartedAt",
+              label: "Investigation Started",
+              deadline: new Date(incDate.getTime() + 24 * 60 * 60 * 1000),
+              completedAt: inc.investigationStartedAt,
+            },
+            {
+              key: "participantNotifiedAt",
+              label: "Participant Notified",
+              deadline: new Date(incDate.getTime() + 24 * 60 * 60 * 1000),
+              completedAt: inc.participantNotifiedAt,
+            },
+            {
+              key: "investigationCompletedAt",
+              label: "Investigation Complete",
+              deadline: new Date(incDate.getTime() + 30 * 24 * 60 * 60 * 1000),
+              completedAt: inc.investigationCompletedAt,
+            },
+          ];
+
+          const nextDeadline = milestones
+            .filter((m) => !m.completedAt)
+            .sort((a, b) => a.deadline.getTime() - b.deadline.getTime())[0];
+
+          const overdueCount = milestones.filter(
+            (m) => !m.completedAt && m.deadline < now
+          ).length;
+
+          return {
+            ...inc,
+            milestones,
+            nextDeadline: nextDeadline
+              ? { ...nextDeadline, hoursRemaining: (nextDeadline.deadline.getTime() - now.getTime()) / (1000 * 60 * 60) }
+              : null,
+            overdueCount,
+          };
+        })
+        .sort((a: any, b: any) => {
+          // Overdue first, then by next deadline ascending
+          if (a.overdueCount > 0 && b.overdueCount === 0) return -1;
+          if (a.overdueCount === 0 && b.overdueCount > 0) return 1;
+          const aNext = a.nextDeadline?.deadline?.getTime() ?? Infinity;
+          const bNext = b.nextDeadline?.deadline?.getTime() ?? Infinity;
+          return aNext - bNext;
+        });
+    }),
+
+    getStats: complianceProcedure.query(async () => {
+      const all = await db.getAllIncidents();
+      const now = new Date();
+
+      const byStatus: Record<string, number> = { open: 0, investigating: 0, pending_resolution: 0, resolved: 0, closed: 0 };
+      const byCategory: Record<string, number> = {};
+      let overdueCount = 0;
+
+      for (const inc of all as any[]) {
+        byStatus[inc.status ?? "open"] = (byStatus[inc.status ?? "open"] || 0) + 1;
+        byCategory[inc.category] = (byCategory[inc.category] || 0) + 1;
+
+        // Check if any milestone is overdue
+        if (inc.status !== "closed" && inc.status !== "resolved" && inc.incidentDate) {
+          const incDate = new Date(inc.incidentDate);
+          const milestoneDeadlines = [
+            { completedAt: inc.scNotifiedAt, deadline: new Date(incDate.getTime() + 24 * 60 * 60 * 1000) },
+            { completedAt: inc.eimEnteredAt, deadline: addBusinessHours(incDate, 48) },
+            { completedAt: inc.investigationStartedAt, deadline: new Date(incDate.getTime() + 24 * 60 * 60 * 1000) },
+            { completedAt: inc.participantNotifiedAt, deadline: new Date(incDate.getTime() + 24 * 60 * 60 * 1000) },
+            { completedAt: inc.investigationCompletedAt, deadline: new Date(incDate.getTime() + 30 * 24 * 60 * 60 * 1000) },
+          ];
+          if (milestoneDeadlines.some((m) => !m.completedAt && m.deadline < now)) {
+            overdueCount++;
+          }
+        }
+      }
+
+      return { byStatus, byCategory, overdueCount, total: all.length };
+    }),
+  }),
+
   // ── Executive Dashboard Stats ─────────────────────────────────────
   dashboardStats: router({
     executive: protectedProcedure.query(async () => {
@@ -1708,6 +1908,26 @@ async function advancePhaseIfReady(employeeId: number, completedGate: string) {
       });
     }
   }
+}
+
+/**
+ * Add business hours to a date (skips weekends).
+ * Used for PA 48-hour EIM entry deadline which excludes weekends.
+ */
+function addBusinessHours(start: Date, hours: number): Date {
+  const result = new Date(start);
+  let remainingHours = hours;
+
+  while (remainingHours > 0) {
+    result.setHours(result.getHours() + 1);
+    const day = result.getDay();
+    // Only count hours on business days (Mon-Fri)
+    if (day !== 0 && day !== 6) {
+      remainingHours--;
+    }
+  }
+
+  return result;
 }
 
 export type AppRouter = typeof appRouter;
