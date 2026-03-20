@@ -1530,6 +1530,35 @@ export const appRouter = router({
           defaultPayRate: getDefaultPayRate(input.waiverType, input.serviceType),
         };
       }),
+
+    saveSnapshot: protectedProcedure
+      .input(z.object({
+        clientId: z.number(),
+        weekOf: z.string().optional(),
+        revenue: z.string(),
+        laborCost: z.string(),
+        overtimeCost: z.string().optional(),
+        overheadAllocation: z.string().optional(),
+        grossProfit: z.string(),
+        grossMargin: z.string(),
+        inputJson: z.string(),
+        resultsJson: z.string(),
+        profitabilityScore: z.number(),
+        recommendation: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return db.createProfitabilitySnapshot({
+          ...input,
+          weekOf: input.weekOf ? new Date(input.weekOf) : new Date(),
+          createdBy: ctx.user.id,
+        } as any);
+      }),
+
+    getSnapshots: protectedProcedure
+      .input(z.object({ clientId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getSnapshotsByClientId(input.clientId);
+      }),
   }),
 
   // ── Client Management ─────────────────────────────────────────────
