@@ -2,13 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "carebase-dev",
+      "name": "carebase",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["tsx", "watch", "server/_core/index.ts"],
-      "port": 3001,
+      "autoPort": true,
       "env": {
-        "NODE_ENV": "development",
-        "PORT": "3001"
+        "NODE_ENV": "development"
       }
     }
   ]
