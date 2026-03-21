@@ -758,6 +758,32 @@ export async function getTimesheetStats(payPeriodId: number): Promise<{
   return { total, submitted, approved, pending, missing };
 }
 
+// EVV Compliance aggregation
+export async function getEVVComplianceData() {
+  const db = await getDb();
+  if (!db) return { timesheets: [] };
+
+  // Get all submitted/approved timesheets with employee info
+  const allTimesheets = await db.select({
+    id: timesheets.id,
+    employeeId: timesheets.employeeId,
+    employeeLegalFirstName: employees.legalFirstName,
+    employeeLegalLastName: employees.legalLastName,
+    payPeriodId: timesheets.payPeriodId,
+    evvCompliant: timesheets.evvCompliant,
+    evvNotes: timesheets.evvNotes,
+    evvVerifiedDate: timesheets.evvVerifiedDate,
+    status: timesheets.status,
+    totalHours: timesheets.totalHours,
+    submittedAt: timesheets.submittedAt,
+  })
+  .from(timesheets)
+  .innerJoin(employees, eq(timesheets.employeeId, employees.id))
+  .orderBy(desc(timesheets.submittedAt));
+
+  return { timesheets: allTimesheets };
+}
+
 // Timesheet template queries
 export async function createTimesheetTemplate(data: InsertTimesheetTemplate): Promise<number> {
   const db = await getDb();

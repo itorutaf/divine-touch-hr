@@ -1561,6 +1561,98 @@ export const appRouter = router({
       }),
   }),
 
+  // ── EVV Compliance ──────────────────────────────────────────────
+  evv: router({
+    getDashboard: complianceProcedure.query(async () => {
+      const { timesheets } = await db.getEVVComplianceData();
+      const allSubmitted = timesheets.filter((t: any) => t.status !== "draft");
+      const totalVisits = allSubmitted.length;
+      const evvCompliantCount = allSubmitted.filter((t: any) => t.evvCompliant).length;
+      const overallRate = totalVisits > 0 ? Math.round((evvCompliantCount / totalVisits) * 100) : 0;
+
+      // Per-caregiver breakdown
+      const byCaregiver: Record<number, {
+        id: number; name: string;
+        totalVisits: number; autoVerified: number; manual: number;
+      }> = {};
+      for (const t of allSubmitted as any[]) {
+        if (!byCaregiver[t.employeeId]) {
+          byCaregiver[t.employeeId] = {
+            id: t.employeeId,
+            name: `${t.employeeLegalFirstName} ${t.employeeLegalLastName}`,
+            totalVisits: 0, autoVerified: 0, manual: 0,
+          };
+        }
+        const cg = byCaregiver[t.employeeId];
+        cg.totalVisits++;
+        if (t.evvCompliant) cg.autoVerified++;
+        else cg.manual++;
+      }
+      const caregivers = Object.values(byCaregiver).map((cg) => ({
+        ...cg,
+        manualPct: cg.totalVisits > 0 ? Number(((cg.manual / cg.totalVisits) * 100).toFixed(1)) : 0,
+      }));
+
+      // Manual entry reason breakdown from evvNotes
+      const reasonCounts: Record<string, number> = {};
+      const manualEntries = allSubmitted.filter((t: any) => !t.evvCompliant);
+      for (const t of manualEntries as any[]) {
+        const note = (t.evvNotes || "Other").toLowerCase();
+        let reason = "Other";
+        if (note.includes("gps")) reason = "GPS Failure";
+        else if (note.includes("phone")) reason = "Phone Issue";
+        else if (note.includes("late") || note.includes("clock")) reason = "Late Clock-In";
+        else if (note.includes("system") || note.includes("error")) reason = "System Error";
+        reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+      }
+      const totalManual = manualEntries.length || 1;
+      const REASON_COLORS: Record<string, string> = {
+        "GPS Failure": "#EF4444",
+        "Phone Issue": "#F59E0B",
+        "Late Clock-In": "#F97316",
+        "System Error": "#2E75B6",
+        "Other": "#94a3b8",
+      };
+      const reasons = Object.entries(reasonCounts).map(([name, count]) => ({
+        name,
+        value: Math.round((count / totalManual) * 100),
+        color: REASON_COLORS[name] || "#94a3b8",
+      }));
+
+      // Weekly trend (group by week of submittedAt)
+      const weeklyMap: Record<string, { total: number; compliant: number }> = {};
+      for (const t of allSubmitted as any[]) {
+        if (!t.submittedAt) continue;
+        const d = new Date(t.submittedAt);
+        const weekStart = new Date(d);
+        weekStart.setDate(d.getDate() - d.getDay());
+        const key = weekStart.toISOString().slice(0, 10);
+        if (!weeklyMap[key]) weeklyMap[key] = { total: 0, compliant: 0 };
+        weeklyMap[key].total++;
+        if (t.evvCompliant) weeklyMap[key].compliant++;
+      }
+      const weeklyTrend = Object.entries(weeklyMap)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .slice(-13)
+        .map(([date, data], i) => ({
+          week: `W${i + 1}`,
+          rate: data.total > 0 ? Math.round((data.compliant / data.total) * 100) : 0,
+          date,
+        }));
+
+      return {
+        overallRate,
+        totalVisits,
+        evvCompliantCount,
+        manualCount: totalVisits - evvCompliantCount,
+        meetsThreshold: overallRate >= 85,
+        caregivers,
+        reasons: reasons.length > 0 ? reasons : [{ name: "No Data", value: 100, color: "#94a3b8" }],
+        weeklyTrend: weeklyTrend.length > 0 ? weeklyTrend : [],
+      };
+    }),
+  }),
+
   // ── Training Module ──────────────────────────────────────────────
   training: router({
     list: protectedProcedure
